@@ -1,204 +1,77 @@
-# === PASTE THIS ENTIRE BLOCK INTO: work_dirs/cfinet_sodad/cfinet_r50_1x_soda.py ===
+after_run:
+(VERY_LOW    ) TextLoggerHook
+ --------------------
+2025-06-26 01:37:46,825 - mmdet - INFO - workflow: [('train', 1)], max: 12 epochs
+2025-06-26 01:37:46,827 - mmdet - INFO - Checkpoints will be saved to /home/shouvon/CFINet/work_dirs/cfinet_r50_1x_soda by HardDiskBackend.
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "tools/train.py", line 247, in <module>
+  File "tools/train.py", line 247, in <module>
+  File "tools/train.py", line 247, in <module>
+            main()main()main()
 
-_base_ = [
-    '../../configs/_base_/models/faster_rcnn_r50_fpn.py',
-    '../../configs/_base_/schedules/schedule_1x.py', 
-    '../../configs/_base_/default_runtime.py'
-]
 
-find_unused_parameters=True
-rpn_weight = 0.9
-model = dict(
-    type='FasterRCNN',
-    neck=dict(
-        type='FPN',
-        in_channels=[256, 512, 1024, 2048],
-        out_channels=256,
-        num_outs=4),
-    rpn_head=dict(
-        _delete_=True,
-        type='CRPNHead',
-        num_stages=2,
-        stages=[
-            dict(
-                type='StageRefineRPNHead',
-                in_channels=256,
-                feat_channels=256,
-                anchor_generator=dict(
-                    type='AnchorGenerator',
-                    scales=[2],
-                    ratios=[1.0],
-                    strides=[4, 8, 16, 32]),
-                refine_reg_factor=200.0,
-                refine_cfg=dict(type='dilation', dilation=3),
-                refined_feature=True,
-                sampling=False,
-                with_cls=False,
-                reg_decoded_bbox=True,
-                bbox_coder=dict(
-                    type='DeltaXYWHBBoxCoder',
-                    target_means=(.0, .0, .0, .0),
-                    target_stds=(0.1, 0.1, 0.5, 0.5)),
-                loss_bbox=dict(
-                    type='IoULoss', linear=True,
-                    loss_weight=10.0 * rpn_weight)),
-            dict(
-                type='StageRefineRPNHead',
-                in_channels=256,
-                feat_channels=256,
-                refine_cfg=dict(type='offset'),
-                refined_feature=True,
-                sampling=True,
-                with_cls=True,
-                reg_decoded_bbox=True,
-                bbox_coder=dict(
-                    type='DeltaXYWHBBoxCoder',
-                    target_means=(.0, .0, .0, .0),
-                    target_stds=(0.05, 0.05, 0.1, 0.1)),
-                loss_cls=dict(
-                    type='CrossEntropyLoss',
-                    use_sigmoid=True,
-                    loss_weight=1.0 * rpn_weight),
-                loss_bbox=dict(
-                    type='IoULoss', linear=True,
-                    loss_weight=10.0 * rpn_weight))]),
-    roi_head=dict(
-        type='FIRoIHead',
-        num_gpus=1,
-        temperature=0.6,
-        contrast_loss_weights=0.50,
-        num_con_queue=256,
-        con_sampler_cfg=dict(
-            num=128,
-            pos_fraction=[0.5, 0.25, 0.125]),
-        con_queue_dir="./work_dirs/roi_feats/cfinet",
-        ins_quality_assess_cfg=dict(
-            cls_score=0.05,
-            hq_score=0.65,
-            lq_score=0.25,
-            hq_pro_counts_thr=8),
-        bbox_roi_extractor=dict(
-            type='SingleRoIExtractor',
-            roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
-            out_channels=256,
-            featmap_strides=[4, 8, 16, 32]),
-        bbox_head=dict(
-            type='Shared2FCBBoxHead',
-            in_channels=256,
-            fc_out_channels=1024,
-            roi_feat_size=7,
-            num_classes=5, # <<< FIX #1: ENSURING NUM_CLASSES IS 5
-            bbox_coder=dict(
-                type='DeltaXYWHBBoxCoder',
-                target_means=[0., 0., 0., 0.],
-                target_stds=[0.1, 0.1, 0.2, 0.2]),
-            reg_class_agnostic=False,
-            loss_cls=dict(
-                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
-            loss_bbox=dict(type='L1Loss', loss_weight=1.0))),
-    train_cfg=dict(
-        rpn=[
-            dict(
-                assigner=dict(
-                    type='DynamicAssigner',
-                    low_quality_iou_thr=0.2,
-                    base_pos_iou_thr=0.25,
-                    neg_iou_thr=0.15),
-                allowed_border=-1,
-                pos_weight=-1,
-                debug=False),
-            dict(
-                assigner=dict(
-                    type='MaxIoUAssigner',
-                    pos_iou_thr=0.7,
-                    neg_iou_thr=0.7,
-                    min_pos_iou=0.3,
-                    ignore_iof_thr=-1),
-                sampler=dict(
-                    type='RandomSampler',
-                    num=256,
-                    pos_fraction=0.5,
-                    neg_pos_ub=-1,
-                    add_gt_as_proposals=False),
-                allowed_border=-1,
-                pos_weight=-1,
-                debug=False)
-        ],
-        rpn_proposal=dict(max_per_img=300, nms=dict(iou_threshold=0.8)),
-        rcnn=dict(
-            assigner=dict(
-                pos_iou_thr=0.50, neg_iou_thr=0.50, min_pos_iou=0.50),
-            sampler=dict(type='RandomSampler', num=256, pos_fraction=0.5))),
-    test_cfg=dict(
-        rpn=dict(max_per_img=300, nms=dict(iou_threshold=0.5)),
-        rcnn=dict(score_thr=0.05))
-)
+  File "tools/train.py", line 236, in main
+  File "tools/train.py", line 236, in main
+  File "tools/train.py", line 236, in main
+        train_detector(train_detector(
 
-# === THE FIX IS IN THIS SECTION ===
-dataset_type = 'CocoDataset'
-data_root = '/home/shouvon/CFINet/SODA-D-1024/'
-# <<< FIX #2: EXPLICITLY DEFINE THE 5 CLASS NAMES FOR SODA-D
-classes = ('car', 'truck', 'bus', 'motorcycle', 'bicycle')
+  File "/home/shouvon/CFINet/mmdet/apis/train.py", line 246, in train_detector
+train_detector(  File "/home/shouvon/CFINet/mmdet/apis/train.py", line 246, in train_detector
 
-img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-train_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations', with_bbox=True),
-    dict(type='Resize', img_scale=(1024, 1024), keep_ratio=True),
-    dict(type='RandomFlip', flip_ratio=0.5),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='Pad', size_divisor=32),
-    dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),
-]
-test_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(
-        type='MultiScaleFlipAug',
-        img_scale=(1024, 1024),
-        flip=False,
-        transforms=[
-            dict(type='Resize', keep_ratio=True),
-            dict(type='RandomFlip'),
-            dict(type='Normalize', **img_norm_cfg),
-            dict(type='Pad', size_divisor=32),
-            dict(type='ImageToTensor', keys=['img']),
-            dict(type='Collect', keys=['img']),
-        ])
-]
+  File "/home/shouvon/CFINet/mmdet/apis/train.py", line 246, in train_detector
+        runner.run(data_loaders, cfg.workflow)runner.run(data_loaders, cfg.workflow)
 
-data = dict(
-    samples_per_gpu=1,
-    workers_per_gpu=2,
-    train=dict(
-        type=dataset_type,
-        ann_file=data_root + 'Annotations/train.json',
-        img_prefix=data_root + 'Images/train/',
-        pipeline=train_pipeline,
-        classes=classes), # <<< FIX #2: PASS THE CUSTOM CLASSES
-    val=dict(
-        type=dataset_type,
-        ann_file=data_root + 'Annotations/train.json',
-        img_prefix=data_root + 'Images/train/',
-        pipeline=test_pipeline,
-        classes=classes), # <<< FIX #2: PASS THE CUSTOM CLASSES
-    test=dict(
-        type=dataset_type,
-        ann_file=data_root + 'Annotations/train.json',
-        img_prefix=data_root + 'Images/train/',
-        pipeline=test_pipeline,
-        classes=classes)) # <<< FIX #2: PASS THE CUSTOM CLASSES
+      File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/epoch_based_runner.py", line 127, in run
+runner.run(data_loaders, cfg.workflow)  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/epoch_based_runner.py", line 127, in run
 
-# Other training settings
-fp16 = dict(loss_scale='dynamic')
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
-lr_config = dict(
-    policy='step',
-    warmup='linear',
-    warmup_iters=500,
-    warmup_ratio=0.001,
-    step=[8, 11])
-total_epochs = 12
-evaluation = dict(interval=1000, metric='bbox')
-log_config = dict(interval=50)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/epoch_based_runner.py", line 127, in run
+        epoch_runner(data_loaders[i], **kwargs)epoch_runner(data_loaders[i], **kwargs)
+
+      File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/epoch_based_runner.py", line 45, in train
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/epoch_based_runner.py", line 45, in train
+epoch_runner(data_loaders[i], **kwargs)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/epoch_based_runner.py", line 45, in train
+        self.call_hook('before_train_epoch')self.call_hook('before_train_epoch')
+
+      File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/base_runner.py", line 309, in call_hook
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/base_runner.py", line 309, in call_hook
+self.call_hook('before_train_epoch')
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/base_runner.py", line 309, in call_hook
+        getattr(hook, fn_name)(self)getattr(hook, fn_name)(self)
+
+      File "/home/shouvon/CFINet/mmdet/datasets/utils.py", line 158, in before_train_epoch
+getattr(hook, fn_name)(self)  File "/home/shouvon/CFINet/mmdet/datasets/utils.py", line 158, in before_train_epoch
+
+  File "/home/shouvon/CFINet/mmdet/datasets/utils.py", line 158, in before_train_epoch
+        self._check_head(runner)self._check_head(runner)
+
+      File "/home/shouvon/CFINet/mmdet/datasets/utils.py", line 144, in _check_head
+self._check_head(runner)  File "/home/shouvon/CFINet/mmdet/datasets/utils.py", line 144, in _check_head
+
+  File "/home/shouvon/CFINet/mmdet/datasets/utils.py", line 144, in _check_head
+    assert module.num_classes == len(dataset.CLASSES), \
+assert module.num_classes == len(dataset.CLASSES), \
+AssertionErrorassert module.num_classes == len(dataset.CLASSES), \:
+AssertionErrorThe `num_classes` (9) in FIRoIHead of MMDistributedDataParallel does not matches the length of `CLASSES` 80) in CocoDataset:
+AssertionErrorThe `num_classes` (9) in FIRoIHead of MMDistributedDataParallel does not matches the length of `CLASSES` 80) in CocoDataset:
+The `num_classes` (9) in FIRoIHead of MMDistributedDataParallel does not matches the length of `CLASSES` 80) in CocoDataset
+Traceback (most recent call last):
+  File "tools/train.py", line 247, in <module>
+    main()
+  File "tools/train.py", line 236, in main
+    train_detector(
+  File "/home/shouvon/CFINet/mmdet/apis/train.py", line 246, in train_detector
+    runner.run(data_loaders, cfg.workflow)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/epoch_based_runner.py", line 127, in run
+    epoch_runner(data_loaders[i], **kwargs)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/epoch_based_runner.py", line 45, in train
+    self.call_hook('before_train_epoch')
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/base_runner.py", line 309, in call_hook
+    getattr(hook, fn_name)(self)
+  File "/home/shouvon/CFINet/mmdet/datasets/utils.py", line 158, in before_train_epoch
+    self._check_head(runner)
+  File "/home/shouvon/CFINet/mmdet/datasets/utils.py", line 144, in _check_head
+    assert module.num_classes == len(dataset.CLASSES), \
+AssertionError: The `num_classes` (9) in FIRoIHead of MMDistributedDataParallel does not matches the length of `CLASSES` 80) in CocoDataset
