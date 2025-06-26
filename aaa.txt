@@ -1,32 +1,88 @@
- python tools/train.py configs/cfinet_sodad/cfinet_r50_soda1024.py \
->        --work-dir work_dirs/cfinet_sodad
-
-Traceback (most recent call last):
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 102, in _validate_py_syntax
-    ast.parse(content)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/ast.py", line 47, in parse
-    return compile(source, filename, mode, flags,
-  File "<unknown>", line 144
-SyntaxError: keyword argument repeated
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "tools/train.py", line 247, in <module>
-    main()
-  File "tools/train.py", line 111, in main
-    cfg = Config.fromfile(args.config)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 337, in fromfile
-    cfg_dict, cfg_text = Config._file2dict(filename,
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 206, in _file2dict
-    Config._validate_py_syntax(filename)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 104, in _validate_py_syntax
-    raise SyntaxError('There are syntax errors in config '
-SyntaxError: There are syntax errors in config file /home/shouvon/CFINet/configs/cfinet_sodad/cfinet_r50_soda1024.py: keyword argument repeated (<unknown>, line 144)
-Exception ignored in: <function _TemporaryFileCloser.__del__ at 0x7f256c667ca0>
-Traceback (most recent call last):
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/tempfile.py", line 456, in __del__
-    self.close()
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/tempfile.py", line 452, in close
-    unlink(self.name)
-FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmpiq8_vk7_/tmplnwfkqxq.py'
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in collate
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 77, in <listcomp>
+    return [collate(samples, samples_per_gpu) for samples in transposed]
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/collate.py", line 23, in collate
+    if not isinstance(batch, Sequence):
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/abc.py", line 98, in __instancecheck__
+    return _abc_instancecheck(cls, instance)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/abc.py", line 102, in __subclasscheck__
+    return _abc_subclasscheck(cls, subclass)
+RecursionError: maximum recursion depth exceeded
