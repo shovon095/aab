@@ -1,0 +1,16 @@
+ python tools/train.py configs/cfinet/faster_rcnn_r50_fpn_cfinet_1x.py \
+>        --work-dir ./work_dirs/cfinet_sodad
+/home/shouvon/CFINet/mmdet/utils/setup_env.py:38: UserWarning: Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.
+  warnings.warn(
+/home/shouvon/CFINet/mmdet/utils/setup_env.py:48: UserWarning: Setting MKL_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.
+  warnings.warn(
+Traceback (most recent call last):
+  File "tools/train.py", line 247, in <module>
+    main()
+  File "tools/train.py", line 180, in main
+    cfg.dump(osp.join(cfg.work_dir, osp.basename(args.config)))
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 564, in dump
+    f.write(self.pretty_text)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 502, in pretty_text
+    text, _ = FormatCode(text, style_config=yapf_style, verify=True)
+TypeError: FormatCode() got an unexpected keyword argument 'verify'
