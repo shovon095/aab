@@ -1,29 +1,9 @@
-2025-06-25 22:40:25,429 - mmdet - INFO - workflow: [('train', 1)], max: 12 epochs
-2025-06-25 22:40:25,430 - mmdet - INFO - Checkpoints will be saved to /home/shouvon/CFINet/work_dirs/cfinet_sodad by HardDiskBackend.
-/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/functional.py:445: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  /opt/conda/conda-bld/pytorch_1634272068694/work/aten/src/ATen/native/TensorShape.cpp:2157.)
-  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
-2025-06-25 22:41:03,587 - mmdet - INFO - Epoch [1][50/90421]    lr: 9.890e-04, eta: 9 days, 13:58:40, time: 0.763, data_time: 0.067, memory: 9441, s0.loss_rpn_reg: 0.2948, s1.loss_rpn_cls: 0.4874, s1.loss_rpn_reg: 0.0811, loss_cls: 0.5667, acc: 93.9648, loss_bbox: 0.0038, loss_con: 0.0000, loss: 1.4338
-2025-06-25 22:41:38,450 - mmdet - INFO - Epoch [1][100/90421]   lr: 1.988e-03, eta: 9 days, 4:03:11, time: 0.697, data_time: 0.011, memory: 9441, s0.loss_rpn_reg: 0.3002, s1.loss_rpn_cls: 0.0529, s1.loss_rpn_reg: 0.0798, loss_cls: 0.1419, acc: 97.5742, loss_bbox: 0.0184, loss_con: 0.0000, loss: 0.5932
-2025-06-25 22:42:14,307 - mmdet - INFO - Epoch [1][150/90421]   lr: 2.987e-03, eta: 9 days, 2:44:02, time: 0.717, data_time: 0.011, memory: 9441, s0.loss_rpn_reg: 0.3266, s1.loss_rpn_cls: 0.0483, s1.loss_rpn_reg: 0.0837, loss_cls: 0.1479, acc: 97.0410, loss_bbox: 0.0348, loss_con: 0.0000, loss: 0.6413
-2025-06-25 22:42:50,560 - mmdet - INFO - Epoch [1][200/90421]   lr: 3.986e-03, eta: 9 days, 2:39:56, time: 0.725, data_time: 0.011, memory: 9441, s0.loss_rpn_reg: 0.3033, s1.loss_rpn_cls: 0.0411, s1.loss_rpn_reg: 0.0779, loss_cls: 0.1487, acc: 96.9141, loss_bbox: 0.0476, loss_con: 0.0000, loss: 0.6185
-2025-06-25 22:43:27,356 - mmdet - INFO - Epoch [1][250/90421]   lr: 4.985e-03, eta: 9 days, 3:16:34, time: 0.736, data_time: 0.011, memory: 9441, s0.loss_rpn_reg: 0.3044, s1.loss_rpn_cls: 0.0373, s1.loss_rpn_reg: 0.0796, loss_cls: 0.1502, acc: 96.8008, loss_bbox: 0.0511, loss_con: 0.0000, loss: 0.6227
-2025-06-25 22:44:03,007 - mmdet - INFO - Epoch [1][300/90421]   lr: 5.984e-03, eta: 9 days, 2:31:45, time: 0.713, data_time: 0.011, memory: 9441, s0.loss_rpn_reg: 0.2971, s1.loss_rpn_cls: 0.0329, s1.loss_rpn_reg: 0.0759, loss_cls: 0.1553, acc: 96.4844, loss_bbox: 0.0714, loss_con: 0.0000, loss: 0.6326
-2025-06-25 22:44:38,193 - mmdet - INFO - Epoch [1][350/90421]   lr: 6.983e-03, eta: 9 days, 1:35:33, time: 0.704, data_time: 0.011, memory: 9441, s0.loss_rpn_reg: 0.2837, s1.loss_rpn_cls: 0.0287, s1.loss_rpn_reg: 0.0715, loss_cls: 0.1416, acc: 96.3203, loss_bbox: 0.0826, loss_con: 0.0000, loss: 0.6081
-Traceback (most recent call last):
-  File "tools/train.py", line 247, in <module>
-    main()
-  File "tools/train.py", line 236, in main
-    train_detector(
-  File "/home/shouvon/CFINet/mmdet/apis/train.py", line 246, in train_detector
-    runner.run(data_loaders, cfg.workflow)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/epoch_based_runner.py", line 127, in run
-    epoch_runner(data_loaders[i], **kwargs)
   File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/epoch_based_runner.py", line 50, in train
     self.run_iter(data_batch, train_mode=True, **kwargs)
   File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/epoch_based_runner.py", line 29, in run_iter
     outputs = self.model.train_step(data_batch, self.optimizer,
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/data_parallel.py", line 75, in train_step
-    return self.module.train_step(*inputs[0], **kwargs[0])
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/parallel/distributed.py", line 59, in train_step
+    output = self.module.train_step(*inputs[0], **kwargs[0])
   File "/home/shouvon/CFINet/mmdet/models/detectors/base.py", line 248, in train_step
     losses = self(**data)
   File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
@@ -32,16 +12,54 @@ Traceback (most recent call last):
     output = old_func(*new_args, **new_kwargs)
   File "/home/shouvon/CFINet/mmdet/models/detectors/base.py", line 172, in forward
     return self.forward_train(img, img_metas, **kwargs)
-  File "/home/shouvon/CFINet/mmdet/models/detectors/two_stage.py", line 135, in forward_train
-    rpn_losses, proposal_list = self.rpn_head.forward_train(
-  File "/home/shouvon/CFINet/mmdet/models/dense_heads/crpn_head.py", line 747, in forward_train
-    stage_loss = stage.loss(*rpn_loss_inputs)
-  File "/home/shouvon/CFINet/mmdet/models/dense_heads/crpn_head.py", line 419, in loss
-    cls_reg_targets = self.get_targets(
-  File "/home/shouvon/CFINet/mmdet/models/dense_heads/crpn_head.py", line 268, in get_targets
-    cls_reg_targets = self.anchor_targets(
-  File "/home/shouvon/CFINet/mmdet/models/dense_heads/crpn_head.py", line 232, in anchor_targets
-    labels_list = images_to_levels(all_labels, num_level_anchors)
-  File "/home/shouvon/CFINet/mmdet/core/anchor/utils.py", line 10, in images_to_levels
-    target = torch.stack(target, 0)
-RuntimeError: stack expects each tensor to be equal size, but got [122740] at entry 0 and [116280] at entry 3
+  File "/home/shouvon/CFINet/mmdet/models/detectors/two_stage.py", line 147, in forward_train
+    roi_losses = self.roi_head.forward_train(x, img_metas, proposal_list,
+  File "/home/shouvon/CFINet/mmdet/models/roi_heads/feature_imitation_roi_head.py", line 204, in forward_train
+    bbox_results = self._bbox_forward_train(
+  File "/home/shouvon/CFINet/mmdet/models/roi_heads/feature_imitation_roi_head.py", line 436, in _bbox_forward_train
+    self._update_iq_score_info(cur_gt_cat_id.item(), cur_gt_roi_feat)
+  File "/home/shouvon/CFINet/mmdet/models/roi_heads/feature_imitation_roi_head.py", line 300, in _update_iq_score_info
+    torch.save(
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/serialization.py", line 376, in save
+    with _open_file_like(f, 'wb') as opened_file:
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/serialization.py", line 230, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/serialization.py", line 211, in __init__
+    super(_open_file, self).__init__(open(name, mode))
+FileNotFoundError: [Errno 2] No such file or directory: './work_dirs/roi_feats/cfinet/1/6.pt'
+WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 19471 closing signal SIGTERM
+WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 19473 closing signal SIGTERM
+WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 19474 closing signal SIGTERM
+ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 1) local_rank: 1 (pid: 19472) of binary: /home/shouvon/miniconda3/envs/cfinet/bin/python
+Traceback (most recent call last):
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/runpy.py", line 194, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 193, in <module>
+    main()
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 189, in main
+    launch(args)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 174, in launch
+    run(args)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/run.py", line 710, in run
+    elastic_launch(
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 131, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 259, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError:
+============================================================
+tools/train.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-06-25_22:59:25
+  host      : dxs4-DGX-Station
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 19472)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
