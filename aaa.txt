@@ -1,26 +1,15 @@
-loading annotations into memory...
-Traceback (most recent call last):
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 52, in build_from_cfg
-    return obj_cls(**args)
-  File "/home/shouvon/CFINet/mmdet/datasets/sodad.py", line 33, in __init__
-    super(SODADDataset, self).__init__(**kwargs)
-  File "/home/shouvon/CFINet/mmdet/datasets/custom.py", line 97, in __init__
-    self.data_infos = self.load_annotations(local_path)
-  File "/home/shouvon/CFINet/mmdet/datasets/sodad.py", line 69, in load_annotations
-    self.coco = COCO(ann_file)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/pycocotools/coco.py", line 81, in __init__
-    with open(annotation_file, 'r') as f:
-FileNotFoundError: [Errno 2] No such file or directory: '/data/SODA-D/divData/Annotations/train.json'
+$ mkdir -p /data/SODA-D/divData/Annotations
+ /data/SODA-D/divData/Images
 
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "tools/train.py", line 247, in <module>
-    main()
-  File "tools/train.py", line 221, in main
-    datasets = [build_dataset(cfg.data.train)]
-  File "/home/shouvon/CFINet/mmdet/datasets/builder.py", line 82, in build_dataset
-    dataset = build_from_cfg(cfg, DATASETS, default_args)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 55, in build_from_cfg
-    raise type(e)(f'{obj_cls.__name__}: {e}')
-FileNotFoundError: SODADDataset: [Errno 2] No such file or directory: '/data/SODA-D/divData/Annotations/train.json'
+ln -sf /hommkdir: cannot create directory ‘/data’: Permission denied
+(cfinet) shouvon@dxs4-DGX-Station:~/CFINet$ mkdir -p /data/SODA-D/divData/Images
+mkdir: cannot create directory ‘/data’: Permission denied
+(cfinet) shouvon@dxs4-DGX-Station:~/CFINet$
+(cfinet) shouvon@dxs4-DGX-Station:~/CFINet$ ln -sf /home/shouvon/CFINet/SODA-D-1024/Annotations/train.json \
+>        /data/SODA-D/divData/Annotations/train.json
+et/SOln: failed to create symbolic link '/data/SODA-D/divData/Annotations/train.json': No such file or directory
+DA-D-1024/Images/train \
+   (cfinet) shouvon@dxs4-DGX-Station:~/CFINet$
+     /da(cfinet) shouvon@dxs4-DGX-Station:~/CFINet$ ln -sfn /home/shouvon/CFINet/SODA-D-1024/Images/train \
+>         /data/SODA-D/divData/Images/train
+ln: failed to create symbolic link '/data/SODA-D/divData/Images/train': No such file or directory
