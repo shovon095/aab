@@ -1,114 +1,26 @@
-       ori_ann_file='/data/SODA-D/rawData/Annotations/val_wo_ignore.json'),
-    test=dict(
-        type='SODADDataset',
-        ann_file='/data/SODA-D/divData/Annotations/test.json',
-        img_prefix='/data/SODA-D/divData/Images/',
-        pipeline=[
-            dict(type='LoadImageFromFile'),
-            dict(
-                type='MultiScaleFlipAug',
-                img_scale=(1200, 1200),
-                flip=False,
-                transforms=[
-                    dict(type='Resize', keep_ratio=True),
-                    dict(type='RandomFlip'),
-                    dict(
-                        type='Normalize',
-                        mean=[123.675, 116.28, 103.53],
-                        std=[58.395, 57.12, 57.375],
-                        to_rgb=True),
-                    dict(type='Pad', size_divisor=32),
-                    dict(type='DefaultFormatBundle'),
-                    dict(type='Collect', keys=['img'])
-                ])
-        ],
-        ori_ann_file='/data/SODA-D/rawData/Annotations/test_wo_ignore.json'))
-optimizer = dict(
-    type='SGD',
-    lr=0.01,
-    momentum=0.9,
-    weight_decay=0.0001,
-    paramwise_cfg=dict(
-        custom_keys=dict({
-            'roi_head.fc_enc': dict(lr_mult=0.05),
-            'roi_head.fc_proj': dict(lr_mult=0.05)
-        })))
-optimizer_config = dict(grad_clip=None)
-lr_config = dict(
-    policy='step',
-    warmup='linear',
-    warmup_iters=500,
-    warmup_ratio=0.001,
-    step=[8, 11])
-runner = dict(type='EpochBasedRunner', max_epochs=12)
-checkpoint_config = dict(interval=1)
-log_config = dict(interval=50, hooks=[dict(type='TextLoggerHook')])
-custom_hooks = [dict(type='NumClassCheckHook')]
-dist_params = dict(backend='nccl')
-log_level = 'INFO'
-load_from = None
-resume_from = None
-workflow = [('train', 1)]
-opencv_num_threads = 0
-mp_start_method = 'fork'
-auto_scale_lr = dict(enable=False, base_batch_size=16)
-find_unused_parameters = True
-rpn_weight = 0.9
-fp16 = dict(loss_scale='dynamic')
-total_epochs = 12
-evaluation = dict(interval=12, metric='bbox')
-work_dir = './work_dirs/cfinet_sodad'
-auto_resume = False
-gpu_ids = [0]
-
-2025-06-25 21:10:05,575 - mmdet - INFO - Set random seed to 8654013, deterministic: False
-/home/shouvon/CFINet/mmdet/models/losses/iou_loss.py:266: UserWarning: DeprecationWarning: Setting "linear=True" in IOULoss is deprecated, please use "mode=`linear`" instead.
-  warnings.warn('DeprecationWarning: Setting "linear=True" in '
-/home/shouvon/CFINet/mmdet/models/dense_heads/anchor_head.py:116: UserWarning: DeprecationWarning: `num_anchors` is deprecated, for consistency or also use `num_base_priors` instead
-  warnings.warn('DeprecationWarning: `num_anchors` is deprecated, '
-/home/shouvon/CFINet/mmdet/models/dense_heads/anchor_head.py:123: UserWarning: DeprecationWarning: anchor_generator is deprecated, please use "prior_generator" instead
-  warnings.warn('DeprecationWarning: anchor_generator is deprecated, '
+loading annotations into memory...
 Traceback (most recent call last):
   File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 52, in build_from_cfg
     return obj_cls(**args)
-  File "/home/shouvon/CFINet/mmdet/models/roi_heads/feature_imitation_roi_head.py", line 68, in __init__
-    self._mkdir(con_queue_dir, num_gpus)
-  File "/home/shouvon/CFINet/mmdet/models/roi_heads/feature_imitation_roi_head.py", line 105, in _mkdir
-    os.mkdir(con_queue_dir)
-FileNotFoundError: [Errno 2] No such file or directory: './work_dirs/roi_feats/cfinet'
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 52, in build_from_cfg
-    return obj_cls(**args)
-  File "/home/shouvon/CFINet/mmdet/models/detectors/faster_rcnn.py", line 19, in __init__
-    super(FasterRCNN, self).__init__(
-  File "/home/shouvon/CFINet/mmdet/models/detectors/two_stage.py", line 50, in __init__
-    self.roi_head = build_head(roi_head)
-  File "/home/shouvon/CFINet/mmdet/models/builder.py", line 40, in build_head
-    return HEADS.build(cfg)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 215, in build
-    return self.build_func(*args, **kwargs, registry=self)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/cnn/builder.py", line 27, in build_model_from_cfg
-    return build_from_cfg(cfg, registry, default_args)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 55, in build_from_cfg
-    raise type(e)(f'{obj_cls.__name__}: {e}')
-FileNotFoundError: FIRoIHead: [Errno 2] No such file or directory: './work_dirs/roi_feats/cfinet'
+  File "/home/shouvon/CFINet/mmdet/datasets/sodad.py", line 33, in __init__
+    super(SODADDataset, self).__init__(**kwargs)
+  File "/home/shouvon/CFINet/mmdet/datasets/custom.py", line 97, in __init__
+    self.data_infos = self.load_annotations(local_path)
+  File "/home/shouvon/CFINet/mmdet/datasets/sodad.py", line 69, in load_annotations
+    self.coco = COCO(ann_file)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/pycocotools/coco.py", line 81, in __init__
+    with open(annotation_file, 'r') as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/data/SODA-D/divData/Annotations/train.json'
 
 During handling of the above exception, another exception occurred:
 
 Traceback (most recent call last):
   File "tools/train.py", line 247, in <module>
     main()
-  File "tools/train.py", line 212, in main
-    model = build_detector(
-  File "/home/shouvon/CFINet/mmdet/models/builder.py", line 58, in build_detector
-    return DETECTORS.build(
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 215, in build
-    return self.build_func(*args, **kwargs, registry=self)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/cnn/builder.py", line 27, in build_model_from_cfg
-    return build_from_cfg(cfg, registry, default_args)
+  File "tools/train.py", line 221, in main
+    datasets = [build_dataset(cfg.data.train)]
+  File "/home/shouvon/CFINet/mmdet/datasets/builder.py", line 82, in build_dataset
+    dataset = build_from_cfg(cfg, DATASETS, default_args)
   File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 55, in build_from_cfg
     raise type(e)(f'{obj_cls.__name__}: {e}')
-FileNotFoundError: FasterRCNN: FIRoIHead: [Errno 2] No such file or directory: './work_dirs/roi_feats/cfinet'
+FileNotFoundError: SODADDataset: [Errno 2] No such file or directory: '/data/SODA-D/divData/Annotations/train.json'
