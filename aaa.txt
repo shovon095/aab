@@ -1,6 +1,10 @@
-wget https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_caffe_fpn_1x_coco/faster_rcnn_r50_caffe_fpn_1x_coco-fb547f4d.pth -O checkpoints/faster_rcnn_r50_caffe_fpn_1x_coco.pth
---2025-06-26 01:09:03--  https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_caffe_fpn_1x_coco/faster_rcnn_r50_caffe_fpn_1x_coco-fb547f4d.pth
-Resolving download.openmmlab.com (download.openmmlab.com)... 8.48.85.225, 8.48.85.226, 8.48.85.227, ...
-Connecting to download.openmmlab.com (download.openmmlab.com)|8.48.85.225|:443... connected.
+wget https://download.openmmlab.com/mmdetection/v3.0/faster_rcnn/faster-rcnn_r50-caffe_fpn_1x_coco/faster-rcnn_r50-caffe_fpn_1x_coco_20220829_22235 FasterRCNN-ba36f78f.pth -O checkpoints/faster_rcnn_r50_caffe_fpn_1x_coco.pth
+--2025-06-26 01:10:26--  https://download.openmmlab.com/mmdetection/v3.0/faster_rcnn/faster-rcnn_r50-caffe_fpn_1x_coco/faster-rcnn_r50-caffe_fpn_1x_coco_20220829_22235
+Resolving download.openmmlab.com (download.openmmlab.com)... 8.48.85.227, 8.48.85.226, 8.48.85.225, ...
+Connecting to download.openmmlab.com (download.openmmlab.com)|8.48.85.227|:443... connected.
 HTTP request sent, awaiting response... 404 Not Found
-2025-06-26 01:09:03 ERROR 404: Not Found.
+2025-06-26 01:10:28 ERROR 404: Not Found.
+
+--2025-06-26 01:10:28--  http://fasterrcnn-ba36f78f.pth/
+Resolving fasterrcnn-ba36f78f.pth (fasterrcnn-ba36f78f.pth)... failed: Name or service not known.
+wget: unable to resolve host address ‘fasterrcnn-ba36f78f.pth’
