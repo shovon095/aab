@@ -1,12 +1,6 @@
-python - <<'PY'
+ python - <<'PY'
 > from mmcv import Config
 > cfg = Config.fromfile('configs/cfinet_sodad/cfinet_r50_soda1024.py')
-> print(cfg.roi_head)          # should show con_queue_dir, contrast_loss_weights
+> print(cfg.model.roi_head)       # <-- correct attribute chain
 > PY
-Traceback (most recent call last):
-  File "<stdin>", line 3, in <module>
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 513, in __getattr__
-    return getattr(self._cfg_dict, name)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 49, in __getattr__
-    raise ex
-AttributeError: 'ConfigDict' object has no attribute 'roi_head'
+{'type': 'FIRoIHead', 'bbox_roi_extractor': {'type': 'SingleRoIExtractor', 'roi_layer': {'type': 'RoIAlign', 'output_size': 7, 'sampling_ratio': 0}, 'out_channels': 256, 'featmap_strides': [4, 8, 16, 32]}, 'bbox_head': {'type': 'Shared2FCBBoxHead', 'in_channels': 256, 'fc_out_channels': 1024, 'roi_feat_size': 7, 'num_classes': 9, 'bbox_coder': {'type': 'DeltaXYWHBBoxCoder', 'target_means': [0.0, 0.0, 0.0, 0.0], 'target_stds': [0.1, 0.1, 0.2, 0.2]}, 'reg_class_agnostic': False, 'loss_cls': {'type': 'CrossEntropyLoss', 'use_sigmoid': False, 'loss_weight': 1.0}, 'loss_bbox': {'type': 'L1Loss', 'loss_weight': 1.0}}, 'num_gpus': 1, 'temperature': 0.6, 'contrast_loss_weights': 0.0, 'num_con_queue': 0, 'con_sampler_cfg': {'num': 128, 'pos_fraction': [0.5, 0.25, 0.125]}, 'con_queue_dir': './work_dirs/roi_feats/cfinet', 'ins_quality_assess_cfg': {'cls_score': 0.05, 'hq_score': 0.65, 'lq_score': 0.25, 'hq_pro_counts_thr': 8}}
