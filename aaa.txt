@@ -1,15 +1,15 @@
-$ mkdir -p /data/SODA-D/divData/Annotations
- /data/SODA-D/divData/Images
 
-ln -sf /hommkdir: cannot create directory ‘/data’: Permission denied
-(cfinet) shouvon@dxs4-DGX-Station:~/CFINet$ mkdir -p /data/SODA-D/divData/Images
-mkdir: cannot create directory ‘/data’: Permission denied
-(cfinet) shouvon@dxs4-DGX-Station:~/CFINet$
-(cfinet) shouvon@dxs4-DGX-Station:~/CFINet$ ln -sf /home/shouvon/CFINet/SODA-D-1024/Annotations/train.json \
->        /data/SODA-D/divData/Annotations/train.json
-et/SOln: failed to create symbolic link '/data/SODA-D/divData/Annotations/train.json': No such file or directory
-DA-D-1024/Images/train \
-   (cfinet) shouvon@dxs4-DGX-Station:~/CFINet$
-     /da(cfinet) shouvon@dxs4-DGX-Station:~/CFINet$ ln -sfn /home/shouvon/CFINet/SODA-D-1024/Images/train \
->         /data/SODA-D/divData/Images/train
-ln: failed to create symbolic link '/data/SODA-D/divData/Images/train': No such file or directory
+Traceback (most recent call last):
+  File "tools/train.py", line 247, in <module>
+    main()
+  File "tools/train.py", line 111, in main
+    cfg = Config.fromfile(args.config)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 337, in fromfile
+    cfg_dict, cfg_text = Config._file2dict(filename,
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 251, in _file2dict
+    _cfg_dict, _cfg_text = Config._file2dict(osp.join(cfg_dir, f))
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 182, in _file2dict
+    check_file_exist(filename)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/path.py", line 23, in check_file_exist
+    raise FileNotFoundError(msg_tmpl.format(filename))
+FileNotFoundError: file "/home/shouvon/CFINet/work_dirs/_base_/models/faster_rcnn_r50_fpn.py" does not exist
