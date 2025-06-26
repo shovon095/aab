@@ -1,13 +1,35 @@
-(cfinet) shouvon@dxs4-DGX-Station:~/CFINet/SODA-D-1024/Images/train$ ^C
-(cfinet) shouvon@dxs4-DGX-Station:~/CFINet/SODA-D-1024/Images/train$ ^C
-(cfinet) shouvon@dxs4-DGX-Station:~/CFINet/SODA-D-1024/Images/train$ cd ..
-(cfinet) shouvon@dxs4-DGX-Station:~/CFINet/SODA-D-1024/Images$ cd ..
-(cfinet) shouvon@dxs4-DGX-Station:~/CFINet/SODA-D-1024$ ls -l
-total 8
-drwxrwxr-x 2 shouvon shouvon 4096 Jun 25 20:33 Annotations
-drwxrwxr-x 3 shouvon shouvon 4096 Jun 25 20:07 Images
-(cfinet) shouvon@dxs4-DGX-Station:~/CFINet/SODA-D-1024$ cd Images
-(cfinet) shouvon@dxs4-DGX-Station:~/CFINet/SODA-D-1024/Images$ ls -l
-total 9976
-drwxrwxr-x 2 shouvon shouvon 10211328 Jun 25 20:31 train
-(cfinet) shouvon@dxs4-DGX-Station:~/CFINet/SODA-D-1024/Images$
+nexpected key in source state_dict: fc.weight, fc.bias
+
+2025-06-25 21:20:13,122 - mmdet - INFO - initialize FPN with init_cfg {'type': 'Xavier', 'layer': 'Conv2d', 'distribution': 'uniform'}
+2025-06-25 21:20:13,147 - mmdet - INFO - initialize StageRefineRPNHead with init_cfg {'type': 'Normal', 'std': 0.01, 'override': [{'name': 'rpn_reg'}]}
+2025-06-25 21:20:13,147 - mmdet - INFO - initialize AdaptiveConv with init_cfg {'type': 'Normal', 'std': 0.01, 'override': {'name': 'conv'}}
+2025-06-25 21:20:13,152 - mmdet - INFO - initialize StageRefineRPNHead with init_cfg {'type': 'Normal', 'std': 0.01, 'override': [{'name': 'rpn_reg'}, {'name': 'rpn_cls'}]}
+2025-06-25 21:20:13,153 - mmdet - INFO - initialize AdaptiveConv with init_cfg {'type': 'Normal', 'std': 0.01, 'override': {'name': 'conv'}}
+2025-06-25 21:20:13,158 - mmdet - INFO - initialize FIRoIHead with init_cfg {'type': 'Normal', 'std': 0.01, 'override': [{'name': 'fc_enc'}, {'name': 'fc_proj'}]}
+2025-06-25 21:20:13,164 - mmdet - INFO - initialize Shared2FCBBoxHead with init_cfg [{'type': 'Normal', 'std': 0.01, 'override': {'name': 'fc_cls'}}, {'type': 'Normal', 'std': 0.001, 'override': {'name': 'fc_reg'}}, {'type': 'Xavier', 'distribution': 'uniform', 'override': [{'name': 'shared_fcs'}, {'name': 'cls_fcs'}, {'name': 'reg_fcs'}]}]
+loading annotations into memory...
+Done (t=18.79s)
+creating index...
+index created!
+loading annotations into memory...
+Traceback (most recent call last):
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 52, in build_from_cfg
+    return obj_cls(**args)
+  File "/home/shouvon/CFINet/mmdet/datasets/sodad.py", line 35, in __init__
+    self.ori_coco = COCO(ori_ann_file)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/pycocotools/coco.py", line 81, in __init__
+    with open(annotation_file, 'r') as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/data/SODA-D/rawData/Annotations/train.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "tools/train.py", line 247, in <module>
+    main()
+  File "tools/train.py", line 221, in main
+    datasets = [build_dataset(cfg.data.train)]
+  File "/home/shouvon/CFINet/mmdet/datasets/builder.py", line 82, in build_dataset
+    dataset = build_from_cfg(cfg, DATASETS, default_args)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 55, in build_from_cfg
+    raise type(e)(f'{obj_cls.__name__}: {e}')
+FileNotFoundError: SODADDataset: [Errno 2] No such file or directory: '/data/SODA-D/rawData/Annotations/train.json'
