@@ -1,15 +1,28 @@
+unexpected key in source state_dict: fc.weight, fc.bias
+
+2025-06-25 22:26:34,679 - mmdet - INFO - initialize FPN with init_cfg {'type': 'Xavier', 'layer': 'Conv2d', 'distribution': 'uniform'}
+2025-06-25 22:26:34,703 - mmdet - INFO - initialize StageRefineRPNHead with init_cfg {'type': 'Normal', 'std': 0.01, 'override': [{'name': 'rpn_reg'}]}
+2025-06-25 22:26:34,704 - mmdet - INFO - initialize AdaptiveConv with init_cfg {'type': 'Normal', 'std': 0.01, 'override': {'name': 'conv'}}
+2025-06-25 22:26:34,709 - mmdet - INFO - initialize StageRefineRPNHead with init_cfg {'type': 'Normal', 'std': 0.01, 'override': [{'name': 'rpn_reg'}, {'name': 'rpn_cls'}]}
+2025-06-25 22:26:34,710 - mmdet - INFO - initialize AdaptiveConv with init_cfg {'type': 'Normal', 'std': 0.01, 'override': {'name': 'conv'}}
+2025-06-25 22:26:34,715 - mmdet - INFO - initialize FIRoIHead with init_cfg {'type': 'Normal', 'std': 0.01, 'override': [{'name': 'fc_enc'}, {'name': 'fc_proj'}]}
+2025-06-25 22:26:34,721 - mmdet - INFO - initialize Shared2FCBBoxHead with init_cfg [{'type': 'Normal', 'std': 0.01, 'override': {'name': 'fc_cls'}}, {'type': 'Normal', 'std': 0.001, 'override': {'name': 'fc_reg'}}, {'type': 'Xavier', 'distribution': 'uniform', 'override': [{'name': 'shared_fcs'}, {'name': 'cls_fcs'}, {'name': 'reg_fcs'}]}]
+Traceback (most recent call last):
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 52, in build_from_cfg
+    return obj_cls(**args)
+  File "/home/shouvon/CFINet/mmdet/datasets/sodad.py", line 33, in __init__
+    super(SODADDataset, self).__init__(**kwargs)
+TypeError: __init__() got an unexpected keyword argument 'mode'
+
+During handling of the above exception, another exception occurred:
 
 Traceback (most recent call last):
   File "tools/train.py", line 247, in <module>
     main()
-  File "tools/train.py", line 111, in main
-    cfg = Config.fromfile(args.config)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 337, in fromfile
-    cfg_dict, cfg_text = Config._file2dict(filename,
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 251, in _file2dict
-    _cfg_dict, _cfg_text = Config._file2dict(osp.join(cfg_dir, f))
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 182, in _file2dict
-    check_file_exist(filename)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/path.py", line 23, in check_file_exist
-    raise FileNotFoundError(msg_tmpl.format(filename))
-FileNotFoundError: file "/home/shouvon/CFINet/work_dirs/_base_/models/faster_rcnn_r50_fpn.py" does not exist
+  File "tools/train.py", line 221, in main
+    datasets = [build_dataset(cfg.data.train)]
+  File "/home/shouvon/CFINet/mmdet/datasets/builder.py", line 82, in build_dataset
+    dataset = build_from_cfg(cfg, DATASETS, default_args)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 55, in build_from_cfg
+    raise type(e)(f'{obj_cls.__name__}: {e}')
+TypeError: SODADDataset: __init__() got an unexpected keyword argument 'mode'
