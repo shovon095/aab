@@ -1,76 +1,12 @@
-    return self.build_func(*args, **kwargs, registry=self)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/cnn/builder.py", line 27, in build_model_from_cfg
-    return build_from_cfg(cfg, registry, default_args)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 55, in build_from_cfg
-    raise type(e)(f'{obj_cls.__name__}: {e}')
-AssertionError: FIRoIHead:
-
-During handling of the above exception, another exception occurred:
-
+python - <<'PY'
+> from mmcv import Config
+> cfg = Config.fromfile('configs/cfinet_sodad/cfinet_r50_soda1024.py')
+> print(cfg.roi_head)          # should show con_queue_dir, contrast_loss_weights
+> PY
 Traceback (most recent call last):
-  File "tools/train.py", line 247, in <module>
-    main()
-  File "tools/train.py", line 212, in main
-    model = build_detector(
-  File "/home/shouvon/CFINet/mmdet/models/builder.py", line 58, in build_detector
-    return DETECTORS.build(
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 215, in build
-    return self.build_func(*args, **kwargs, registry=self)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/cnn/builder.py", line 27, in build_model_from_cfg
-    return build_from_cfg(cfg, registry, default_args)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 55, in build_from_cfg
-    raise type(e)(f'{obj_cls.__name__}: {e}')
-AssertionError: FasterRCNN: FIRoIHead:
-ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 1) local_rank: 0 (pid: 21628) of binary: /home/shouvon/miniconda3/envs/cfinet/bin/python
-Traceback (most recent call last):
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/runpy.py", line 194, in _run_module_as_main
-    return _run_code(code, main_globals, None,
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/runpy.py", line 87, in _run_code
-    exec(code, run_globals)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 193, in <module>
-    main()
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 189, in main
-    launch(args)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 174, in launch
-    run(args)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/run.py", line 710, in run
-    elastic_launch(
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 131, in __call__
-    return launch_agent(self._config, self._entrypoint, list(args))
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 259, in launch_agent
-    raise ChildFailedError(
-torch.distributed.elastic.multiprocessing.errors.ChildFailedError:
-============================================================
-tools/train.py FAILED
-------------------------------------------------------------
-Failures:
-[1]:
-  time      : 2025-06-25_23:59:03
-  host      : dxs4-DGX-Station
-  rank      : 1 (local_rank: 1)
-  exitcode  : 1 (pid: 21629)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-[2]:
-  time      : 2025-06-25_23:59:03
-  host      : dxs4-DGX-Station
-  rank      : 2 (local_rank: 2)
-  exitcode  : 1 (pid: 21630)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-[3]:
-  time      : 2025-06-25_23:59:03
-  host      : dxs4-DGX-Station
-  rank      : 3 (local_rank: 3)
-  exitcode  : 1 (pid: 21631)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-------------------------------------------------------------
-Root Cause (first observed failure):
-[0]:
-  time      : 2025-06-25_23:59:03
-  host      : dxs4-DGX-Station
-  rank      : 0 (local_rank: 0)
-  exitcode  : 1 (pid: 21628)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+  File "<stdin>", line 3, in <module>
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 513, in __getattr__
+    return getattr(self._cfg_dict, name)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/config.py", line 49, in __getattr__
+    raise ex
+AttributeError: 'ConfigDict' object has no attribute 'roi_head'
