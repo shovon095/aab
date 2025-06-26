@@ -1,25 +1,33 @@
-    return build_from_cfg(cfg, registry, default_args)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 55, in build_from_cfg
-    raise type(e)(f'{obj_cls.__name__}: {e}')
-AssertionError: FIRoIHead:
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "tools/train.py", line 247, in <module>
+CheckpointLoader.load_checkpoint(filename, map_location, logger)
+  File "./tools/train.py", line 247, in <module>
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/checkpoint.py", line 285, in load_checkpoint
+    return CheckpointLoader.load_checkpoint(filename, map_location, logger)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/checkpoint.py", line 285, in load_checkpoint
+    return checkpoint_loader(filename, map_location)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/checkpoint.py", line 301, in load_from_local
     main()
-  File "tools/train.py", line 212, in main
-    model = build_detector(
-  File "/home/shouvon/CFINet/mmdet/models/builder.py", line 58, in build_detector
-    return DETECTORS.build(
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 215, in build
-    return self.build_func(*args, **kwargs, registry=self)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/cnn/builder.py", line 27, in build_model_from_cfg
-    return build_from_cfg(cfg, registry, default_args)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 55, in build_from_cfg
-    raise type(e)(f'{obj_cls.__name__}: {e}')
-AssertionError: FasterRCNN: FIRoIHead:
-ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 1) local_rank: 0 (pid: 21903) of binary: /home/shouvon/miniconda3/envs/cfinet/bin/python
+  File "./tools/train.py", line 236, in main
+    return checkpoint_loader(filename, map_location)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/checkpoint.py", line 301, in load_from_local
+    raise FileNotFoundError(f'{filename} can not be found.')
+FileNotFoundError: checkpoints/faster_rcnn_r50_caffe_fpn_1x_coco.pth can not be found.
+    train_detector(
+  File "/home/shouvon/CFINet/mmdet/apis/train.py", line 245, in train_detector
+    raise FileNotFoundError(f'{filename} can not be found.')
+FileNotFoundError: checkpoints/faster_rcnn_r50_caffe_fpn_1x_coco.pth can not be found.
+    runner.load_checkpoint(cfg.load_from)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/base_runner.py", line 339, in load_checkpoint
+    return load_checkpoint(
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/checkpoint.py", line 581, in load_checkpoint
+    checkpoint = _load_checkpoint(filename, map_location, logger)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/checkpoint.py", line 520, in _load_checkpoint
+    return CheckpointLoader.load_checkpoint(filename, map_location, logger)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/checkpoint.py", line 285, in load_checkpoint
+    return checkpoint_loader(filename, map_location)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/checkpoint.py", line 301, in load_from_local
+    raise FileNotFoundError(f'{filename} can not be found.')
+FileNotFoundError: checkpoints/faster_rcnn_r50_caffe_fpn_1x_coco.pth can not be found.
+ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 1) local_rank: 0 (pid: 22674) of binary: /home/shouvon/miniconda3/envs/cfinet/bin/python
 Traceback (most recent call last):
   File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/runpy.py", line 194, in _run_module_as_main
     return _run_code(code, main_globals, None,
@@ -39,37 +47,36 @@ Traceback (most recent call last):
     raise ChildFailedError(
 torch.distributed.elastic.multiprocessing.errors.ChildFailedError:
 ============================================================
-tools/train.py FAILED
+./tools/train.py FAILED
 ------------------------------------------------------------
 Failures:
 [1]:
-  time      : 2025-06-26_00:04:20
+  time      : 2025-06-26_00:57:38
   host      : dxs4-DGX-Station
   rank      : 1 (local_rank: 1)
-  exitcode  : 1 (pid: 21904)
+  exitcode  : 1 (pid: 22675)
   error_file: <N/A>
   traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
 [2]:
-  time      : 2025-06-26_00:04:20
+  time      : 2025-06-26_00:57:38
   host      : dxs4-DGX-Station
   rank      : 2 (local_rank: 2)
-  exitcode  : 1 (pid: 21905)
+  exitcode  : 1 (pid: 22676)
   error_file: <N/A>
   traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
 [3]:
-  time      : 2025-06-26_00:04:20
+  time      : 2025-06-26_00:57:38
   host      : dxs4-DGX-Station
   rank      : 3 (local_rank: 3)
-  exitcode  : 1 (pid: 21906)
+  exitcode  : 1 (pid: 22677)
   error_file: <N/A>
   traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
 ------------------------------------------------------------
 Root Cause (first observed failure):
 [0]:
-  time      : 2025-06-26_00:04:20
+  time      : 2025-06-26_00:57:38
   host      : dxs4-DGX-Station
   rank      : 0 (local_rank: 0)
-  exitcode  : 1 (pid: 21903)
+  exitcode  : 1 (pid: 22674)
   error_file: <N/A>
   traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-============================================================
