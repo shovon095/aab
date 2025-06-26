@@ -1,60 +1,7 @@
-
-2025-06-25 23:33:37,584 - mmdet - INFO - Set random seed to 0, deterministic: False
-/home/shouvon/CFINet/mmdet/models/losses/iou_loss.py:266: UserWarning: DeprecationWarning: Setting "linear=True" in IOULoss is deprecated, please use "mode=`linear`" instead.
-  warnings.warn('DeprecationWarning: Setting "linear=True" in '
-/home/shouvon/CFINet/mmdet/models/dense_heads/anchor_head.py:116: UserWarning: DeprecationWarning: `num_anchors` is deprecated, for consistency or also use `num_base_priors` instead
-  warnings.warn('DeprecationWarning: `num_anchors` is deprecated, '
-/home/shouvon/CFINet/mmdet/models/dense_heads/anchor_head.py:123: UserWarning: DeprecationWarning: anchor_generator is deprecated, please use "prior_generator" instead
-  warnings.warn('DeprecationWarning: anchor_generator is deprecated, '
-/home/shouvon/CFINet/mmdet/models/losses/iou_loss.py:266: UserWarning: DeprecationWarning: Setting "linear=True" in IOULoss is deprecated, please use "mode=`linear`" instead.
-  warnings.warn('DeprecationWarning: Setting "linear=True" in '
-/home/shouvon/CFINet/mmdet/models/losses/iou_loss.py:266: UserWarning: DeprecationWarning: Setting "linear=True" in IOULoss is deprecated, please use "mode=`linear`" instead.
-  warnings.warn('DeprecationWarning: Setting "linear=True" in '
-/home/shouvon/CFINet/mmdet/models/losses/iou_loss.py:266: UserWarning: DeprecationWarning: Setting "linear=True" in IOULoss is deprecated, please use "mode=`linear`" instead.
-  warnings.warn('DeprecationWarning: Setting "linear=True" in '
-/home/shouvon/CFINet/mmdet/models/dense_heads/anchor_head.py:116: UserWarning: DeprecationWarning: `num_anchors` is deprecated, for consistency or also use `num_base_priors` instead
-  warnings.warn('DeprecationWarning: `num_anchors` is deprecated, '
-/home/shouvon/CFINet/mmdet/models/dense_heads/anchor_head.py:123: UserWarning: DeprecationWarning: anchor_generator is deprecated, please use "prior_generator" instead
-  warnings.warn('DeprecationWarning: anchor_generator is deprecated, '
-/home/shouvon/CFINet/mmdet/models/dense_heads/anchor_head.py:116: UserWarning: DeprecationWarning: `num_anchors` is deprecated, for consistency or also use `num_base_priors` instead
-  warnings.warn('DeprecationWarning: `num_anchors` is deprecated, '
-/home/shouvon/CFINet/mmdet/models/dense_heads/anchor_head.py:123: UserWarning: DeprecationWarning: anchor_generator is deprecated, please use "prior_generator" instead
-  warnings.warn('DeprecationWarning: anchor_generator is deprecated, '
-/home/shouvon/CFINet/mmdet/models/dense_heads/anchor_head.py:116: UserWarning: DeprecationWarning: `num_anchors` is deprecated, for consistency or also use `num_base_priors` instead
-  warnings.warn('DeprecationWarning: `num_anchors` is deprecated, '
-/home/shouvon/CFINet/mmdet/models/dense_heads/anchor_head.py:123: UserWarning: DeprecationWarning: anchor_generator is deprecated, please use "prior_generator" instead
-  warnings.warn('DeprecationWarning: anchor_generator is deprecated, '
-Traceback (most recent call last):
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 52, in build_from_cfg
-    return obj_cls(**args)
-  File "/home/shouvon/CFINet/mmdet/models/roi_heads/feature_imitation_roi_head.py", line 68, in __init__
-    self._mkdir(con_queue_dir, num_gpus)
-  File "/home/shouvon/CFINet/mmdet/models/roi_heads/feature_imitation_roi_head.py", line 104, in _mkdir
-    shutil.rmtree(con_queue_dir)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/shutil.py", line 709, in rmtree
-    onerror(os.lstat, path, sys.exc_info())
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/shutil.py", line 707, in rmtree
-    orig_st = os.lstat(path)
-FileNotFoundError: [Errno 2] No such file or directory: './work_dirs/roi_feats/cfinet'
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 52, in build_from_cfg
-    return obj_cls(**args)
-  File "/home/shouvon/CFINet/mmdet/models/detectors/faster_rcnn.py", line 19, in __init__
-    super(FasterRCNN, self).__init__(
-  File "/home/shouvon/CFINet/mmdet/models/detectors/two_stage.py", line 50, in __init__
-    self.roi_head = build_head(roi_head)
-  File "/home/shouvon/CFINet/mmdet/models/builder.py", line 40, in build_head
-    return HEADS.build(cfg)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 215, in build
-    return self.build_func(*args, **kwargs, registry=self)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/cnn/builder.py", line 27, in build_model_from_cfg
     return build_from_cfg(cfg, registry, default_args)
   File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 55, in build_from_cfg
     raise type(e)(f'{obj_cls.__name__}: {e}')
-FileNotFoundError: FIRoIHead: [Errno 2] No such file or directory: './work_dirs/roi_feats/cfinet'
+TypeError: FIRoIHead: stat: path should be string, bytes, os.PathLike or integer, not NoneType
 
 During handling of the above exception, another exception occurred:
 
@@ -71,14 +18,8 @@ Traceback (most recent call last):
     return build_from_cfg(cfg, registry, default_args)
   File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/utils/registry.py", line 55, in build_from_cfg
     raise type(e)(f'{obj_cls.__name__}: {e}')
-FileNotFoundError: FasterRCNN: FIRoIHead: [Errno 2] No such file or directory: './work_dirs/roi_feats/cfinet'
-2025-06-25 23:33:38,054 - mmdet - INFO - initialize ResNet with init_cfg {'type': 'Pretrained', 'checkpoint': 'torchvision://resnet50'}
-2025-06-25 23:33:38,055 - mmcv - INFO - load model from: torchvision://resnet50
-2025-06-25 23:33:38,055 - mmcv - INFO - load checkpoint from torchvision path: torchvision://resnet50
-WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 20444 closing signal SIGTERM
-WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 20445 closing signal SIGTERM
-WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 20446 closing signal SIGTERM
-ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 1) local_rank: 3 (pid: 20447) of binary: /home/shouvon/miniconda3/envs/cfinet/bin/python
+TypeError: FasterRCNN: FIRoIHead: stat: path should be string, bytes, os.PathLike or integer, not NoneType
+ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 1) local_rank: 0 (pid: 20597) of binary: /home/shouvon/miniconda3/envs/cfinet/bin/python
 Traceback (most recent call last):
   File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/runpy.py", line 194, in _run_module_as_main
     return _run_code(code, main_globals, None,
@@ -99,16 +40,3 @@ Traceback (most recent call last):
 torch.distributed.elastic.multiprocessing.errors.ChildFailedError:
 ============================================================
 tools/train.py FAILED
-------------------------------------------------------------
-Failures:
-  <NO_OTHER_FAILURES>
-------------------------------------------------------------
-Root Cause (first observed failure):
-[0]:
-  time      : 2025-06-25_23:33:39
-  host      : dxs4-DGX-Station
-  rank      : 3 (local_rank: 3)
-  exitcode  : 1 (pid: 20447)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-============================================================
