@@ -1,8 +1,7 @@
- python create_final_subset.py
+python create_val_subset.py
+Loading full validation annotation file: /home/shouvon/CFINet/SODA-D-1024/Annotations/val.json
 
-Successfully loaded full annotation file: /home/shouvon/CFINet/SODA-D-1024/Annotations/test.json
-
-Creating subset with 3 images.
+Creating validation subset with 10 images.
 Found 0 corresponding ground-truth annotations.
 
-Successfully saved the correct subset annotation file to: supervisor_test_set/annotations/mini_test.json
+Successfully saved subset validation file to: supervisor_test_set/annotations/mini_val.json
