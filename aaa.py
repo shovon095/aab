@@ -1,7 +1,33 @@
-python create_val_subset.py
-Loading full validation annotation file: /home/shouvon/CFINet/SODA-D-1024/Annotations/val.json
-
-Creating validation subset with 10 images.
-Found 0 corresponding ground-truth annotations.
-
-Successfully saved subset validation file to: supervisor_test_set/annotations/mini_val.json
+        {
+            "file_name": "00387_53.jpg",
+            "height": 1024,
+            "width": 1024,
+            "id": 1500,
+            "ori_id": 387,
+            "start_coord": [
+                1600,
+                820
+            ]
+        },
+        {
+            "file_name": "00387_54.jpg",
+            "height": 1024,
+            "width": 1024,
+            "id": 1501,
+            "ori_id": 387,
+            "start_coord": [
+                1800,
+                0
+            ]
+        },
+        {
+            "file_name": "00387_55.jpg",
+            "height": 1024,
+            "width": 1024,
+            "id": 1502,
+            "ori_id": 387,
+            "start_coord": [
+                1800,
+                200
+            ]
+        },
