@@ -1,63 +1,18 @@
-    epoch_runner(data_loaders[i], **kwargs)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/epoch_based_runner.py", line 45, in train
-    self.call_hook('before_train_epoch')
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/mmcv/runner/base_runner.py", line 309, in call_hook
-    getattr(hook, fn_name)(self)
-  File "/home/shouvon/CFINet/mmdet/datasets/utils.py", line 158, in before_train_epoch
-    self._check_head(runner)
-  File "/home/shouvon/CFINet/mmdet/datasets/utils.py", line 144, in _check_head
-    assert module.num_classes == len(dataset.CLASSES), \
-AssertionError: The `num_classes` (9) in FIRoIHead of MMDistributedDataParallel does not matches the length of `CLASSES` 80) in CocoDataset
-ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 1) local_rank: 0 (pid: 23816) of binary: /home/shouvon/miniconda3/envs/cfinet/bin/python
-Traceback (most recent call last):
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/runpy.py", line 194, in _run_module_as_main
-    return _run_code(code, main_globals, None,
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/runpy.py", line 87, in _run_code
-    exec(code, run_globals)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 193, in <module>
-    main()
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 189, in main
-    launch(args)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 174, in launch
-    run(args)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/run.py", line 710, in run
-    elastic_launch(
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 131, in __call__
-    return launch_agent(self._config, self._entrypoint, list(args))
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 259, in launch_agent
-    raise ChildFailedError(
-torch.distributed.elastic.multiprocessing.errors.ChildFailedError:
-============================================================
-tools/train.py FAILED
-------------------------------------------------------------
-Failures:
-[1]:
-  time      : 2025-06-26_01:45:17
-  host      : dxs4-DGX-Station
-  rank      : 1 (local_rank: 1)
-  exitcode  : 1 (pid: 23817)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-[2]:
-  time      : 2025-06-26_01:45:17
-  host      : dxs4-DGX-Station
-  rank      : 2 (local_rank: 2)
-  exitcode  : 1 (pid: 23818)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-[3]:
-  time      : 2025-06-26_01:45:17
-  host      : dxs4-DGX-Station
-  rank      : 3 (local_rank: 3)
-  exitcode  : 1 (pid: 23819)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-------------------------------------------------------------
-Root Cause (first observed failure):
-[0]:
-  time      : 2025-06-26_01:45:17
-  host      : dxs4-DGX-Station
-  rank      : 0 (local_rank: 0)
-  exitcode  : 1 (pid: 23816)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+ python demo/image_demo.py     demo/demo.jpg     work_dirs/cfinet_sodad/cfinet_r50_1x_soda.py     ./work_dirs/faster_rcnn_r50_fpn_cfinet_1x/epoch_12.pth     --device cuda   --out-file my_visualizations/result_sample.jpg
+/home/shouvon/CFINet/mmdet/models/losses/iou_loss.py:266: UserWarning: DeprecationWarning: Setting "linear=True" in IOULoss is deprecated, please use "mode=`linear`" instead.
+  warnings.warn('DeprecationWarning: Setting "linear=True" in '
+/home/shouvon/CFINet/mmdet/models/dense_heads/anchor_head.py:116: UserWarning: DeprecationWarning: `num_anchors` is deprecated, for consistency or also use `num_base_priors` instead
+  warnings.warn('DeprecationWarning: `num_anchors` is deprecated, '
+/home/shouvon/CFINet/mmdet/models/dense_heads/anchor_head.py:123: UserWarning: DeprecationWarning: anchor_generator is deprecated, please use "prior_generator" instead
+  warnings.warn('DeprecationWarning: anchor_generator is deprecated, '
+load checkpoint from local path: ./work_dirs/faster_rcnn_r50_fpn_cfinet_1x/epoch_12.pth
+The model and loaded state dict do not match exactly
+
+size mismatch for roi_head.bbox_head.fc_cls.weight: copying a param with shape torch.Size([10, 1024]) from checkpoint, the shape in current model is torch.Size([6, 1024]).
+size mismatch for roi_head.bbox_head.fc_cls.bias: copying a param with shape torch.Size([10]) from checkpoint, the shape in current model is torch.Size([6]).
+size mismatch for roi_head.bbox_head.fc_reg.weight: copying a param with shape torch.Size([36, 1024]) from checkpoint, the shape in current model is torch.Size([20, 1024]).
+size mismatch for roi_head.bbox_head.fc_reg.bias: copying a param with shape torch.Size([36]) from checkpoint, the shape in current model is torch.Size([20]).
+/home/shouvon/CFINet/mmdet/datasets/utils.py:66: UserWarning: "ImageToTensor" pipeline is replaced by "DefaultFormatBundle" for batch inference. It is recommended to manually replace it in the test data pipeline in your config file.
+  warnings.warn(
+/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/functional.py:445: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  /opt/conda/conda-bld/pytorch_1634272068694/work/aten/src/ATen/native/TensorShape.cpp:2157.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
