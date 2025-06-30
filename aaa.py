@@ -1,39 +1,16 @@
-"   /home/shouvon/CFINet/work_dirs/faster_rcnn_r50_fpn_cfinet_1x
-"   Sorted by      name
-"   Sort sequence: [\/]$,\<core\%(\.\d\+\)\=\>,\.h$,\.c$,\.cpp$,\~\=\*$,*,\.o$,\.obj$,\.info$,\.swp$,\.bak$,\~$
-"   Quick Help: <F1>:help  -:go up dir  D:delete  R:rename  s:sort-by  x:special
-" ==============================================================================
-../                                                                                                                                                                             ./
-20250626_015143.log
-20250626_015143.log.json
-20250626_102107.log
-20250626_102107.log.json
-20250626_103935.log
-20250626_103935.log.json
-20250626_105011.log
-20250626_105011.log.json
-20250626_110210.log
-20250626_110210.log.json
-20250626_110540.log
-20250626_110540.log.json
-20250626_110911.log
-20250626_110911.log.json
-20250626_112227.log
-20250626_112527.log
-20250626_125411.log
-20250626_125800.log
-20250626_125800.log.json
-20250626_130104.log
-20250626_130104.log.json
-20250626_142509.log
-20250626_142509.log.json
-20250626_143451.log
-20250626_143451.log.json
-20250626_144955.log
-20250626_144955.log.json
-20250626_155706.log
-20250626_155809.log
-20250626_155809.log.json
-epoch_1.pth
-epoch_10.pth
-"work_dirs" is a directory
+ demo/de>     demo/demo.jpg \
+>     configs/cfinet/faster_rcnn_r50_fpn_cfinet_1x.py \
+>     work_dirs/faster_rcnn_r50_fpn_cfinet_1x/epoch_10.pth \
+>     --device cuda \
+>     --out-file my_visualizations/final_working_result.jpg
+/home/shouvon/CFINet/mmdet/models/losses/iou_loss.py:266: UserWarning: DeprecationWarning: Setting "linear=True" in IOULoss is deprecated, please use "mode=`linear`" instead.
+  warnings.warn('DeprecationWarning: Setting "linear=True" in '
+/home/shouvon/CFINet/mmdet/models/dense_heads/anchor_head.py:116: UserWarning: DeprecationWarning: `num_anchors` is deprecated, for consistency or also use `num_base_priors` instead
+  warnings.warn('DeprecationWarning: `num_anchors` is deprecated, '
+/home/shouvon/CFINet/mmdet/models/dense_heads/anchor_head.py:123: UserWarning: DeprecationWarning: anchor_generator is deprecated, please use "prior_generator" instead
+  warnings.warn('DeprecationWarning: anchor_generator is deprecated, '
+load checkpoint from local path: work_dirs/faster_rcnn_r50_fpn_cfinet_1x/epoch_10.pth
+/home/shouvon/CFINet/mmdet/datasets/utils.py:66: UserWarning: "ImageToTensor" pipeline is replaced by "DefaultFormatBundle" for batch inference. It is recommended to manually replace it in the test data pipeline in your config file.
+  warnings.warn(
+/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/functional.py:445: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  /opt/conda/conda-bld/pytorch_1634272068694/work/aten/src/ATen/native/TensorShape.cpp:2157.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
