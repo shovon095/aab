@@ -1,31 +1,42 @@
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/runpy.py", line 194, in _run_module_as_main
-    return _run_code(code, main_globals, None,
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/runpy.py", line 87, in _run_code
-    exec(code, run_globals)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 193, in <module>
-    main()
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 189, in main
-    launch(args)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 174, in launch
-    run(args)
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/run.py", line 710, in run
-    elastic_launch(
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 131, in __call__
-    return launch_agent(self._config, self._entrypoint, list(args))
-  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 259, in launch_agent
-    raise ChildFailedError(
-torch.distributed.elastic.multiprocessing.errors.ChildFailedError:
-============================================================
-tools/test.py FAILED
-------------------------------------------------------------
-Failures:
-  <NO_OTHER_FAILURES>
-------------------------------------------------------------
-Root Cause (first observed failure):
-[0]:
-  time      : 2025-06-29_23:49:46
-  host      : dxs4-DGX-Station
-  rank      : 0 (local_rank: 0)
-  exitcode  : 1 (pid: 16181)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+
+{
+    "type": "instance",
+    "images": [
+        {
+            "file_name": "00065_0.jpg",
+            "height": 1024,
+            "width": 1024,
+            "id": 0,
+            "ori_id": 65,
+            "start_coord": [
+                0,
+                0
+            ]
+        },
+        {
+            "file_name": "00065_1.jpg",
+            "height": 1024,
+            "width": 1024,
+            "id": 1,
+            "ori_id": 65,
+            "start_coord": [
+                0,
+                200
+            ]
+        },
+        {
+            "file_name": "00065_2.jpg",
+            "height": 1024,
+            "width": 1024,
+            "id": 2,
+            "ori_id": 65,
+            "start_coord": [
+                0,
+                400
+            ]
+        },
+        {
+            "file_name": "00065_3.jpg",
+            "height": 1024,
+            "width": 1024,
+            "id": 3,
