@@ -1,38 +1,57 @@
-    train_cfg=dict(
-        rpn=[
-            dict(
-                assigner=dict(
-                    type='DynamicAssigner',
-                    low_quality_iou_thr=0.2,
-                    base_pos_iou_thr=0.25,
-                    neg_iou_thr=0.15),
-                allowed_border=-1,
-                pos_weight=-1,
-                debug=False),
-            dict(
-                assigner=dict(
-                    type='MaxIoUAssigner',
-                    pos_iou_thr=0.7,
-                    neg_iou_thr=0.7,
-                    min_pos_iou=0.3,
-                    ignore_iof_thr=-1),
-                sampler=dict(
-                    type='RandomSampler',
-                    num=256,
-                    pos_fraction=0.5,
-                    neg_pos_ub=-1,
-                    add_gt_as_proposals=False),
-                allowed_border=-1,
-                pos_weight=-1,
-                debug=False)
-        ],
-        rpn_proposal=dict(max_per_img=300, nms=dict(iou_threshold=0.8)),
-        rcnn=dict(
-            assigner=dict(
-                pos_iou_thr=0.50, neg_iou_thr=0.50, min_pos_iou=0.50),
-            sampler=dict(type='RandomSampler', num=256, pos_fraction=0.5))),
-    test_cfg=dict(
-        rpn=dict(max_per_img=300, nms=dict(iou_threshold=0.1)),
-        rcnn=dict(score_thr=0.005))
-)
+load checkpoint from local path: work_dirs/faster_rcnn_r50_fpn_cfinet_1x/epoch_10.pth
+[                                                  ] 0/2, elapsed: 0s, ETA:/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/functional.py:445: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  /opt/conda/conda-bld/pytorch_1634272068694/work/aten/src/ATen/native/TensorShape.cpp:2157.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/functional.py:445: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  /opt/conda/conda-bld/pytorch_1634272068694/work/aten/src/ATen/native/TensorShape.cpp:2157.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+[>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 4/2, 1.4 task/s, elapsed: 3s, ETA:     0s/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/functional.py:445: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  /opt/conda/conda-bld/pytorch_1634272068694/work/aten/src/ATen/native/TensorShape.cpp:2157.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/functional.py:445: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  /opt/conda/conda-bld/pytorch_1634272068694/work/aten/src/ATen/native/TensorShape.cpp:2157.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+Traceback (most recent call last):
+  File "tools/test.py", line 286, in <module>
+    main()
+  File "tools/test.py", line 278, in main
+    metric = dataset.evaluate(outputs, **eval_kwargs)
+  File "/home/shouvon/CFINet/mmdet/datasets/coco.py", line 641, in evaluate
+    result_files, tmp_dir = self.format_results(results, jsonfile_prefix)
+  File "/home/shouvon/CFINet/mmdet/datasets/coco.py", line 383, in format_results
+    result_files = self.results2json(results, jsonfile_prefix)
+  File "/home/shouvon/CFINet/mmdet/datasets/coco.py", line 315, in results2json
+    json_results = self._det2json(results)
+  File "/home/shouvon/CFINet/mmdet/datasets/coco.py", line 252, in _det2json
+    data['category_id'] = self.cat_ids[label]
+IndexError: list index out of range
+ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 1) local_rank: 0 (pid: 20869) of binary: /home/shouvon/miniconda3/envs/cfinet/bin/python
+Traceback (most recent call last):
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/runpy.py", line 194, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/runpy.py", line 87, in _run_code
+    exec(code, run_globals)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 193, in <module>
+    main()
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 189, in main
+    launch(args)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launch.py", line 174, in launch
+    run(args)
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/run.py", line 710, in run
+    elastic_launch(
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 131, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/home/shouvon/miniconda3/envs/cfinet/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 259, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError:
+============================================================
+tools/test.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-06-30_01:43:04
+  host      : dxs4-DGX-Station
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 20869)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
 
