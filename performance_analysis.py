@@ -217,14 +217,16 @@ class StudentModelWithCRF(PreTrainedModel):
         self.student_base = StudentModelForTokenClassification(config)
         self.crf = CRF(num_tags=config.num_labels, batch_first=True)
         self.post_init()
-
+    # In StudentModelWithCRF class
     def forward(self, input_ids, attention_mask=None, labels=None, **kwargs):
         outputs = self.student_base(input_ids=input_ids, attention_mask=attention_mask)
         emissions = outputs.logits
-        mask = attention_mask.bool()
-        loss, logits = None, None
+        mask = attention_mask.bool() if attention_mask is not None else None
+        loss = None
         if labels is not None:
-            loss = -self.crf(emissions, labels, mask=mask, reduction='mean')
+            crf_labels = labels.clone()
+            crf_labels[crf_labels == IGNORE_INDEX] = 0
+            loss = -self.crf(emissions, crf_labels, mask=mask, reduction='mean')
         decoded_sequences = self.crf.decode(emissions, mask=mask)
         max_len = emissions.shape[1]
         padded_logits = torch.full((len(decoded_sequences), max_len), IGNORE_INDEX, device=emissions.device)
