@@ -290,7 +290,7 @@ class DistillationTrainer(Trainer):
         return (total_loss, student_outputs) if return_outputs else total_loss
 
 class CrfTrainer(Trainer):
-    """Custom trainer to handle CRF decoding during evaluation."""
+    """Custom trainer to handle CRF decoding during evaluation, especially for multi-GPU."""
     def prediction_step(
         self,
         model: nn.Module,
@@ -306,8 +306,11 @@ class CrfTrainer(Trainer):
             emissions = outputs.logits
             mask = inputs["attention_mask"].bool()
             
+            # Get the actual model from the DataParallel wrapper if it exists
+            crf_model = model.module if hasattr(model, 'module') else model
+            
             # Decode using the model's own CRF layer
-            decoded_sequences = model.crf.decode(emissions, mask=mask)
+            decoded_sequences = crf_model.crf.decode(emissions, mask=mask)
 
             # Pad the decoded sequences to create a predictions tensor
             max_len = inputs["labels"].shape[1]
@@ -329,8 +332,8 @@ def align_predictions(predictions, label_ids, id2label, is_crf=False):
         pred_row, label_row = [], []
         for j in range(preds.shape[1]):
             if label_ids[i, j] != IGNORE_INDEX:
-                pred_row.append(id2label[preds[i, j]])
-                label_row.append(id2label[label_ids[i, j]])
+                pred_row.append(id2label.get(preds[i, j], "O")) # Use .get for safety
+                label_row.append(id2label.get(label_ids[i, j], "O"))
         preds_list.append(pred_row)
         labels_list.append(label_row)
     return preds_list, labels_list
@@ -341,6 +344,7 @@ def build_compute_metrics(id2label, is_crf=False):
         predictions = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
         preds, golds = align_predictions(predictions, p.label_ids, id2label, is_crf)
         report = classification_report(golds, preds, output_dict=True, zero_division=0)
+        # Use micro avg for overall token-level performance
         return {"f1": report["micro avg"]["f1-score"], "precision": report["micro avg"]["precision"], "recall": report["micro avg"]["recall"]}
     return compute_metrics
 
@@ -372,7 +376,11 @@ def main():
         teacher_config = AutoConfig.from_pretrained(m_args.teacher_model_name_or_path, num_labels=num_labels, output_hidden_states=True)
         teacher = AutoModelForTokenClassification.from_pretrained(m_args.teacher_model_name_or_path, config=teacher_config)
 
-    student_config = StudentConfig.from_json_file(m_args.student_config_name) if m_args.student_config_name and os.path.exists(m_args.student_config_name) else StudentConfig()
+    student_config_path = m_args.student_config_name
+    if student_config_path and os.path.exists(student_config_path):
+        student_config = StudentConfig.from_json_file(student_config_path)
+    else:
+        student_config = StudentConfig()
     student_config.num_labels = num_labels
     student_config.vocab_size = tokenizer.vocab_size
 
