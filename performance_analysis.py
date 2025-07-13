@@ -1,4 +1,4 @@
-# benchmark_ner.py – Python 3.8-compatible script for comparing NER models.
+# performance_analysis.py – Python 3.8-compatible script for comparing NER models.
 # Compares SJS/KL distillation vs. a non-distilled CRF baseline.
 # Measures performance (F1) and efficiency (Time, TFLOPs, Memory).
 
@@ -217,7 +217,7 @@ class StudentModelWithCRF(PreTrainedModel):
         self.student_base = StudentModelForTokenClassification(config)
         self.crf = CRF(num_tags=config.num_labels, batch_first=True)
         self.post_init()
-    # In StudentModelWithCRF class
+
     def forward(self, input_ids, attention_mask=None, labels=None, **kwargs):
         outputs = self.student_base(input_ids=input_ids, attention_mask=attention_mask)
         emissions = outputs.logits
@@ -334,7 +334,8 @@ def main():
     num_labels = len(labels)
     t_args.remove_unused_columns = False
 
-    tokenizer = AutoTokenizer.from_pretrained(m_args.tokenizer_name or m_args.teacher_model_name_or_path or "bert-base-cased", use_fast=True)
+    tokenizer_name = m_args.tokenizer_name or m_args.teacher_model_name_or_path or "bert-base-cased"
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True)
 
     teacher = None
     if m_args.model_type == 'distill':
@@ -343,7 +344,10 @@ def main():
         teacher_config = AutoConfig.from_pretrained(m_args.teacher_model_name_or_path, num_labels=num_labels, output_hidden_states=True)
         teacher = AutoModelForTokenClassification.from_pretrained(m_args.teacher_model_name_or_path, config=teacher_config)
 
-    student_config = StudentConfig.from_pretrained(m_args.student_config_name, num_labels=num_labels) if m_args.student_config_name else StudentConfig(num_labels=num_labels, vocab_size=tokenizer.vocab_size)
+    student_config = StudentConfig.from_json_file(m_args.student_config_name) if m_args.student_config_name else StudentConfig()
+    student_config.num_labels = num_labels
+    student_config.vocab_size = tokenizer.vocab_size
+
 
     student = None
     if m_args.model_type == 'crf':
@@ -382,23 +386,25 @@ def main():
         metrics = trainer.evaluate()
         logger.info(f"Student F1: {metrics.get('eval_f1', 0):.4f}")
 
-    try:
-        from fvcore.nn import FlopCountAnalysis
-        logger.info("*** Analyzing Inference TFLOPs ***")
-        data_loader = DataLoader(dev_ds, batch_size=t_args.per_device_eval_batch_size, collate_fn=trainer.data_collator)
-        batch = next(iter(data_loader))
-        batch = {k: v.to(trainer.args.device) for k, v in batch.items()}
-        if "labels" in batch:
-            batch.pop("labels")
-        flops = FlopCountAnalysis(student, batch)
-        total_flops = flops.total()
-        logger.info(f"Inference FLOPs per batch: {total_flops / 1e9:.4f} GFLOPs")
-        if t_args.do_train:
-             trainer.log({"inference_gflops_per_batch": total_flops / 1e9})
-    except ImportError:
-        logger.warning("fvcore not installed. Skipping TFLOPs analysis. `pip install fvcore`")
-    except Exception as e:
-        logger.error(f"Could not run FLOPs analysis: {e}")
+    if dev_ds:
+        try:
+            from fvcore.nn import FlopCountAnalysis
+            logger.info("*** Analyzing Inference TFLOPs ***")
+            data_loader = DataLoader(dev_ds, batch_size=t_args.per_device_eval_batch_size, collate_fn=trainer.data_collator)
+            batch = next(iter(data_loader))
+            batch = {k: v.to(trainer.args.device) for k, v in batch.items()}
+            if "labels" in batch:
+                batch.pop("labels")
+            inputs_tuple = (batch['input_ids'], batch['attention_mask'])
+            flops = FlopCountAnalysis(student, inputs_tuple)
+            total_flops = flops.total()
+            logger.info(f"Inference FLOPs per batch: {total_flops / 1e9:.4f} GFLOPs")
+            if t_args.do_train:
+                 trainer.log({"inference_gflops_per_batch": total_flops / 1e9})
+        except ImportError:
+            logger.warning("fvcore not installed. Skipping TFLOPs analysis. `pip install fvcore`")
+        except Exception as e:
+            logger.error(f"Could not run FLOPs analysis: {e}")
 
     logger.info("Benchmark run finished.")
 
