@@ -8,7 +8,7 @@ import sys
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
@@ -22,6 +22,7 @@ from transformers import (
     AutoConfig,
     AutoModelForTokenClassification,
     AutoTokenizer,
+    DataCollatorForTokenClassification,
     EvalPrediction,
     HfArgumentParser,
     PreTrainedModel,
@@ -193,7 +194,7 @@ class StudentModelForTokenClassification(PreTrainedModel):
         super().__init__(config)
         self.num_labels = config.num_labels
         self.embeddings = nn.Embedding(config.vocab_size, config.hidden_size)
-        encoder_layer = nn.TransformerEncoderLayer(d_model=config.hidden_size, nhead=config.num_attention_heads, batch_first=True)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=config.hidden_size, nhead=config.num_attention_heads, batch_first=True, dropout=0.1)
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=config.num_hidden_layers)
         self.classifier = nn.Linear(config.hidden_size, config.num_labels)
         self.post_init()
@@ -221,21 +222,16 @@ class StudentModelWithCRF(PreTrainedModel):
     def forward(self, input_ids, attention_mask=None, labels=None, **kwargs):
         outputs = self.student_base(input_ids=input_ids, attention_mask=attention_mask)
         emissions = outputs.logits
-        mask = attention_mask.bool() if attention_mask is not None else None
         loss = None
         if labels is not None:
+            mask = attention_mask.bool() if attention_mask is not None else None
             crf_labels = labels.clone()
             crf_labels[crf_labels == IGNORE_INDEX] = 0
             loss = -self.crf(emissions, crf_labels, mask=mask, reduction='mean')
-        decoded_sequences = self.crf.decode(emissions, mask=mask)
-        max_len = emissions.shape[1]
-        padded_logits = torch.full((len(decoded_sequences), max_len), IGNORE_INDEX, device=emissions.device)
-        for i, seq in enumerate(decoded_sequences):
-            padded_logits[i, :len(seq)] = torch.tensor(seq, device=emissions.device)
-        return TokenClassifierOutput(loss=loss, logits=padded_logits)
+        return TokenClassifierOutput(loss=loss, logits=emissions)
 
 # =================================================================================
-# 4. Distillation Trainer & Helpers
+# 4. Trainers & Helpers
 # =================================================================================
 
 def js_divergence(p, q, eps=1e-6):
@@ -293,11 +289,40 @@ class DistillationTrainer(Trainer):
                 self.log({"peak_gpu_memory_mb": peak_mem})
         return (total_loss, student_outputs) if return_outputs else total_loss
 
+class CrfTrainer(Trainer):
+    """Custom trainer to handle CRF decoding during evaluation."""
+    def prediction_step(
+        self,
+        model: nn.Module,
+        inputs: Dict[str, Union[torch.Tensor, Any]],
+        prediction_loss_only: bool,
+        ignore_keys: Optional[List[str]] = None,
+    ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor], Optional[torch.Tensor]]:
+        
+        inputs = self._prepare_inputs(inputs)
+        with torch.no_grad():
+            outputs = model(**inputs)
+            loss = outputs.loss
+            emissions = outputs.logits
+            mask = inputs["attention_mask"].bool()
+            
+            # Decode using the model's own CRF layer
+            decoded_sequences = model.crf.decode(emissions, mask=mask)
+
+            # Pad the decoded sequences to create a predictions tensor
+            max_len = inputs["labels"].shape[1]
+            preds = torch.full(inputs["labels"].shape, IGNORE_INDEX, device=emissions.device, dtype=torch.long)
+            for i, seq in enumerate(decoded_sequences):
+                preds[i, :len(seq)] = torch.tensor(seq, device=emissions.device)
+            
+        return (loss, preds, inputs["labels"])
+
 # =================================================================================
 # 5. Metrics & Prediction Alignment
 # =================================================================================
 
 def align_predictions(predictions, label_ids, id2label, is_crf=False):
+    # For CRF, predictions are already decoded indices. Otherwise, argmax logits.
     preds = predictions if is_crf else np.argmax(predictions, axis=2)
     preds_list, labels_list = [], []
     for i in range(preds.shape[0]):
@@ -312,6 +337,7 @@ def align_predictions(predictions, label_ids, id2label, is_crf=False):
 
 def build_compute_metrics(id2label, is_crf=False):
     def compute_metrics(p: EvalPrediction) -> Dict[str, float]:
+        # p.predictions is what is returned by prediction_step
         predictions = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
         preds, golds = align_predictions(predictions, p.label_ids, id2label, is_crf)
         report = classification_report(golds, preds, output_dict=True, zero_division=0)
@@ -335,7 +361,9 @@ def main():
     t_args.remove_unused_columns = False
 
     tokenizer_name = m_args.tokenizer_name or m_args.teacher_model_name_or_path or "bert-base-cased"
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, use_fast=True, add_prefix_space=True)
+    
+    data_collator = DataCollatorForTokenClassification(tokenizer=tokenizer)
 
     teacher = None
     if m_args.model_type == 'distill':
@@ -344,10 +372,9 @@ def main():
         teacher_config = AutoConfig.from_pretrained(m_args.teacher_model_name_or_path, num_labels=num_labels, output_hidden_states=True)
         teacher = AutoModelForTokenClassification.from_pretrained(m_args.teacher_model_name_or_path, config=teacher_config)
 
-    student_config = StudentConfig.from_json_file(m_args.student_config_name) if m_args.student_config_name else StudentConfig()
+    student_config = StudentConfig.from_json_file(m_args.student_config_name) if m_args.student_config_name and os.path.exists(m_args.student_config_name) else StudentConfig()
     student_config.num_labels = num_labels
     student_config.vocab_size = tokenizer.vocab_size
-
 
     student = None
     if m_args.model_type == 'crf':
@@ -367,9 +394,9 @@ def main():
 
     trainer = None
     if is_crf:
-        trainer = Trainer(model=student, args=t_args, train_dataset=train_ds, eval_dataset=dev_ds, compute_metrics=compute_metrics_fn, tokenizer=tokenizer)
+        trainer = CrfTrainer(model=student, args=t_args, train_dataset=train_ds, eval_dataset=dev_ds, compute_metrics=compute_metrics_fn, data_collator=data_collator)
     else:
-        trainer = DistillationTrainer(model=student, teacher_model=teacher, distill_args=dist_args, args=t_args, train_dataset=train_ds, eval_dataset=dev_ds, compute_metrics=compute_metrics_fn, tokenizer=tokenizer)
+        trainer = DistillationTrainer(model=student, teacher_model=teacher, distill_args=dist_args, args=t_args, train_dataset=train_ds, eval_dataset=dev_ds, compute_metrics=compute_metrics_fn, data_collator=data_collator)
 
     if t_args.do_train:
         logger.info(f"*** Starting Training for model: {m_args.model_type}, method: {dist_args.distillation_method if not is_crf else 'CRF'} ***")
@@ -390,8 +417,7 @@ def main():
         try:
             from fvcore.nn import FlopCountAnalysis
             logger.info("*** Analyzing Inference TFLOPs ***")
-            data_loader = DataLoader(dev_ds, batch_size=t_args.per_device_eval_batch_size, collate_fn=trainer.data_collator)
-            batch = next(iter(data_loader))
+            batch = next(iter(DataLoader(dev_ds, batch_size=t_args.per_device_eval_batch_size, collate_fn=data_collator)))
             batch = {k: v.to(trainer.args.device) for k, v in batch.items()}
             if "labels" in batch:
                 batch.pop("labels")
