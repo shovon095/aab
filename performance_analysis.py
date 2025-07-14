@@ -16,7 +16,7 @@ from filelock import FileLock
 from seqeval.metrics import classification_report
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
-# Install prerequisites: pip install transformers seqeval torchcrf fvcore
+# Install prerequisites: pip install transformers seqeval torchcrf fvcore accelerate
 from torchcrf import CRF
 from transformers import (
     AutoConfig,
@@ -60,6 +60,9 @@ class InputFeatures:
 def read_examples_from_file(data_dir: str, mode: str) -> List[InputExample]:
     """Reads a CoNLL-style text file."""
     file_path = os.path.join(data_dir, f"{mode}.tsv")
+    if not os.path.exists(file_path):
+        logger.warning(f"File not found: {file_path}. Skipping this dataset.")
+        return []
     examples = []
     words, labels, guid_idx = [], [], 1
     with open(file_path, encoding="utf-8") as f:
@@ -112,15 +115,20 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
 
 class NerDataset(Dataset):
     def __init__(self, data_dir, tokenizer, labels, max_seq_length, mode, overwrite_cache=False):
+        self.features = []
+        examples = read_examples_from_file(data_dir, mode)
+        if not examples:
+            return
+            
         cached_features_file = os.path.join(data_dir, f"cached_{mode}_{tokenizer.__class__.__name__}_{max_seq_length}.pt")
         lock_file = cached_features_file + ".lock"
         with FileLock(lock_file):
             if os.path.exists(cached_features_file) and not overwrite_cache:
-                self.features = torch.load(cached_features_file, weights_only=False) # Consider weights_only=True for security
+                self.features = torch.load(cached_features_file, weights_only=False)
             else:
-                examples = read_examples_from_file(data_dir, mode)
                 self.features = convert_examples_to_features(examples, labels, max_seq_length, tokenizer)
                 torch.save(self.features, cached_features_file)
+
     def __len__(self): return len(self.features)
     def __getitem__(self, i):
         f = self.features[i]
@@ -257,7 +265,6 @@ class DistillationTrainer(Trainer):
         student_outputs = model(**inputs, output_hidden_states=True)
         ce_loss = student_outputs.loss
 
-        # If method is none, just do standard training
         if self.distill_args.distillation_method == "none":
             return (ce_loss, student_outputs) if return_outputs else ce_loss
 
@@ -321,13 +328,10 @@ class CrfTrainer(Trainer):
             emissions = outputs.logits
             mask = inputs["attention_mask"].bool()
             
-            # Get the actual model from the DataParallel wrapper if it exists
             crf_model = model.module if hasattr(model, 'module') else model
             
-            # Decode using the model's own CRF layer
             decoded_sequences = crf_model.crf.decode(emissions, mask=mask)
 
-            # Pad the decoded sequences to create a predictions tensor
             max_len = inputs["labels"].shape[1]
             preds = torch.full(inputs["labels"].shape, IGNORE_INDEX, device=emissions.device, dtype=torch.long)
             for i, seq in enumerate(decoded_sequences):
@@ -340,15 +344,19 @@ class CrfTrainer(Trainer):
 # =================================================================================
 
 def align_predictions(predictions, label_ids, id2label, is_crf=False):
+    # The 'predictions' object might be a tuple (logits, hidden_states). We only want the logits.
+    logits = predictions[0] if isinstance(predictions, tuple) else predictions
+    
     # For CRF, predictions are already decoded indices. Otherwise, argmax logits.
-    preds = predictions if is_crf else np.argmax(predictions, axis=2)
+    preds = logits if is_crf else np.argmax(logits, axis=2)
+    
     preds_list, labels_list = [], []
     for i in range(preds.shape[0]):
         pred_row, label_row = [], []
         for j in range(preds.shape[1]):
             if label_ids[i, j] != IGNORE_INDEX:
-                pred_row.append(id2label.get(preds[i, j], "O")) # Use .get for safety
-                label_row.append(id2label.get(label_ids[i, j], "O"))
+                pred_row.append(id2label.get(int(preds[i, j]), "O"))
+                label_row.append(id2label.get(int(label_ids[i, j]), "O"))
         preds_list.append(pred_row)
         labels_list.append(label_row)
     return preds_list, labels_list
@@ -366,16 +374,10 @@ def build_compute_metrics(id2label, is_crf=False):
 # =================================================================================
 # 6. Main Benchmark Runner
 # =================================================================================
-# =================================================================================
-# 6. Main Benchmark Runner (with Debugging)
-# =================================================================================
 
 def main():
     parser = HfArgumentParser((ModelArguments, DataArguments, DistillArguments, TrainingArguments))
     m_args, d_args, dist_args, t_args = parser.parse_args_into_dataclasses()
-
-    # --- DEBUG: Check if the argument is parsed correctly ---
-    print(f"\n---> DEBUG: do_predict flag is set to: {t_args.do_predict}\n")
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s")
     set_seed(t_args.seed)
@@ -419,12 +421,6 @@ def main():
     dev_ds = NerDataset(d_args.data_dir, tokenizer, labels, d_args.max_seq_length, "devel", d_args.overwrite_cache) if t_args.do_eval else None
     test_ds = NerDataset(d_args.data_dir, tokenizer, labels, d_args.max_seq_length, "test", d_args.overwrite_cache) if t_args.do_predict else None
 
-    # --- DEBUG: Check if the test dataset was loaded ---
-    if t_args.do_predict:
-        print(f"\n---> DEBUG: test_ds object is: {test_ds}")
-        if test_ds:
-            print(f"---> DEBUG: test_ds length is: {len(test_ds)}\n")
-
     is_crf = m_args.model_type == 'crf'
     compute_metrics_fn = build_compute_metrics(id2label, is_crf=is_crf)
 
@@ -452,12 +448,8 @@ def main():
         logger.info(f"Student F1: {metrics.get('eval_f1', 0):.4f}")
         logger.info(f"Total evaluation time: {eval_time:.2f} seconds")
 
-    # --- INFERENCE ON TEST SET ---
-    print("\n---> DEBUG: Checking do_predict block...")
     if t_args.do_predict:
-        print("---> DEBUG: Entered the do_predict block.")
-        if test_ds:
-            print("---> DEBUG: test_ds is valid, proceeding with prediction...")
+        if test_ds and len(test_ds) > 0:
             logger.info("*** Running Inference on Test Set ***")
             start_time = time.time()
             predict_results = trainer.predict(test_ds)
@@ -465,21 +457,15 @@ def main():
             inference_time = end_time - start_time
             logger.info(f"Total inference time on test set: {inference_time:.2f} seconds")
             
-            # Optionally save predictions
             preds_list, _ = align_predictions(predict_results.predictions, predict_results.label_ids, id2label, is_crf)
             output_predict_file = os.path.join(t_args.output_dir, "test_predictions.txt")
             with open(output_predict_file, "w") as writer:
                 for sentence in preds_list:
                     writer.write(" ".join(sentence) + "\n")
         else:
-            print("---> DEBUG: test_ds is NOT valid, skipping prediction.")
-            logger.warning("Test dataset not found. Skipping prediction.")
-    else:
-        print("---> DEBUG: do_predict is False, skipping prediction block entirely.")
+            logger.warning("Test dataset not found or is empty. Skipping prediction.")
 
-
-    # --- TFLOPS ANALYSIS ---
-    if dev_ds:
+    if dev_ds and len(dev_ds) > 0:
         try:
             from fvcore.nn import FlopCountAnalysis
             logger.info("*** Analyzing Inference TFLOPs ***")
@@ -499,5 +485,6 @@ def main():
             logger.error(f"Could not run FLOPs analysis: {e}")
 
     logger.info("Benchmark run finished.")
+
 if __name__ == "__main__":
     main()
