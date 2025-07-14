@@ -242,23 +242,34 @@ def js_divergence(p, q, eps=1e-6):
 class DistillationTrainer(Trainer):
     def __init__(self, teacher_model, distill_args, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.teacher = teacher_model.to(self.args.device).eval()
+        self.teacher = teacher_model
+        if self.teacher is not None:
+            self.teacher = self.teacher.to(self.args.device).eval()
         self.distill_args = distill_args
         self.proj = None
-        if self.model.config.hidden_size != self.teacher.config.hidden_size:
+        if self.teacher is not None and hasattr(self.model.config, 'hidden_size') and hasattr(self.teacher.config, 'hidden_size') and self.model.config.hidden_size != self.teacher.config.hidden_size:
             self.proj = nn.Linear(self.model.config.hidden_size, self.teacher.config.hidden_size).to(self.args.device)
 
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         if torch.cuda.is_available():
             torch.cuda.reset_peak_memory_stats()
+        
         student_outputs = model(**inputs, output_hidden_states=True)
         ce_loss = student_outputs.loss
+
+        # If method is none, just do standard training
+        if self.distill_args.distillation_method == "none":
+            return (ce_loss, student_outputs) if return_outputs else ce_loss
+
         with torch.no_grad():
             teacher_outputs = self.teacher(**inputs, output_hidden_states=True)
+        
         mask = inputs["labels"] != IGNORE_INDEX
         s_logits_m, t_logits_m = student_outputs.logits[mask], teacher_outputs.logits[mask]
-        distill_loss = 0.0
+        
+        distill_loss = torch.tensor(0.0, device=ce_loss.device)
         T, method = self.distill_args.temperature, self.distill_args.distillation_method
+        
         if method == 'kl':
             distill_loss = nn.functional.kl_div(nn.functional.log_softmax(s_logits_m / T, -1), nn.functional.softmax(t_logits_m / T, -1), reduction='batchmean') * (T ** 2)
         elif method in ['sj', 'ssjs']:
@@ -277,16 +288,20 @@ class DistillationTrainer(Trainer):
                 else:
                     trans_js = torch.tensor(0.0, device=ce_loss.device)
                 distill_loss = token_js + self.distill_args.lambda_sjs * trans_js
+        
         s_hidden, t_hidden = student_outputs.hidden_states[-1], teacher_outputs.hidden_states[-1]
         if self.proj:
             s_hidden = self.proj(s_hidden)
         mse_loss = nn.functional.mse_loss(s_hidden[mask], t_hidden[mask])
+        
         a, b = self.distill_args.alpha_ce, self.distill_args.beta_mse
         total_loss = a * ce_loss + (1 - a) * distill_loss + b * mse_loss
+        
         if torch.cuda.is_available():
             peak_mem = torch.cuda.max_memory_allocated() / (1024 ** 2)
             if self.state.global_step > 0 and self.state.global_step % self.args.logging_steps == 0:
                 self.log({"peak_gpu_memory_mb": peak_mem})
+        
         return (total_loss, student_outputs) if return_outputs else total_loss
 
 class CrfTrainer(Trainer):
@@ -370,9 +385,9 @@ def main():
     data_collator = DataCollatorForTokenClassification(tokenizer=tokenizer)
 
     teacher = None
-    if m_args.model_type == 'distill':
+    if m_args.model_type == 'distill' and dist_args.distillation_method != 'none':
         if not m_args.teacher_model_name_or_path:
-            raise ValueError("A --teacher_model_name_or_path is required for --model_type 'distill'.")
+            raise ValueError("A --teacher_model_name_or_path is required for distillation.")
         teacher_config = AutoConfig.from_pretrained(m_args.teacher_model_name_or_path, num_labels=num_labels, output_hidden_states=True)
         teacher = AutoModelForTokenClassification.from_pretrained(m_args.teacher_model_name_or_path, config=teacher_config)
 
@@ -403,11 +418,12 @@ def main():
     trainer = None
     if is_crf:
         trainer = CrfTrainer(model=student, args=t_args, train_dataset=train_ds, eval_dataset=dev_ds, compute_metrics=compute_metrics_fn, data_collator=data_collator)
-    else:
+    else: # distill or vanilla
         trainer = DistillationTrainer(model=student, teacher_model=teacher, distill_args=dist_args, args=t_args, train_dataset=train_ds, eval_dataset=dev_ds, compute_metrics=compute_metrics_fn, data_collator=data_collator)
 
     if t_args.do_train:
-        logger.info(f"*** Starting Training for model: {m_args.model_type}, method: {dist_args.distillation_method if not is_crf else 'CRF'} ***")
+        method_name = dist_args.distillation_method if m_args.model_type == 'distill' else 'CRF'
+        logger.info(f"*** Starting Training for model: {m_args.model_type}, method: {method_name} ***")
         start_time = time.time()
         trainer.train(resume_from_checkpoint=t_args.resume_from_checkpoint)
         end_time = time.time()
@@ -419,7 +435,9 @@ def main():
     if t_args.do_eval:
         logger.info("*** Evaluating Student ***")
         metrics = trainer.evaluate()
+        eval_time = metrics.get("eval_runtime", 0)
         logger.info(f"Student F1: {metrics.get('eval_f1', 0):.4f}")
+        logger.info(f"Total evaluation time: {eval_time:.2f} seconds")
 
     if dev_ds:
         try:
