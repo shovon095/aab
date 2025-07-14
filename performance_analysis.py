@@ -1,6 +1,6 @@
 # performance_analysis.py – Python 3.8-compatible script for comparing NER models.
 # Compares SJS/KL distillation vs. a non-distilled CRF baseline.
-# Measures performance (F1) and efficiency (Time, TFLOPs, Memory).
+# Measures performance (F1) and efficiency (Training Time, Eval Time, Inference Time, TFLOPs, Memory).
 
 import logging
 import os
@@ -116,7 +116,7 @@ class NerDataset(Dataset):
         lock_file = cached_features_file + ".lock"
         with FileLock(lock_file):
             if os.path.exists(cached_features_file) and not overwrite_cache:
-                self.features = torch.load(cached_features_file)
+                self.features = torch.load(cached_features_file, weights_only=False) # Consider weights_only=True for security
             else:
                 examples = read_examples_from_file(data_dir, mode)
                 self.features = convert_examples_to_features(examples, labels, max_seq_length, tokenizer)
@@ -411,6 +411,7 @@ def main():
 
     train_ds = NerDataset(d_args.data_dir, tokenizer, labels, d_args.max_seq_length, "train_dev", d_args.overwrite_cache) if t_args.do_train else None
     dev_ds = NerDataset(d_args.data_dir, tokenizer, labels, d_args.max_seq_length, "devel", d_args.overwrite_cache) if t_args.do_eval else None
+    test_ds = NerDataset(d_args.data_dir, tokenizer, labels, d_args.max_seq_length, "test", d_args.overwrite_cache) if t_args.do_predict else None
 
     is_crf = m_args.model_type == 'crf'
     compute_metrics_fn = build_compute_metrics(id2label, is_crf=is_crf)
@@ -439,6 +440,26 @@ def main():
         logger.info(f"Student F1: {metrics.get('eval_f1', 0):.4f}")
         logger.info(f"Total evaluation time: {eval_time:.2f} seconds")
 
+    # --- INFERENCE ON TEST SET ---
+    if t_args.do_predict:
+        if test_ds:
+            logger.info("*** Running Inference on Test Set ***")
+            start_time = time.time()
+            predict_results = trainer.predict(test_ds)
+            end_time = time.time()
+            inference_time = end_time - start_time
+            logger.info(f"Total inference time on test set: {inference_time:.2f} seconds")
+            
+            # Optionally save predictions
+            preds_list, _ = align_predictions(predict_results.predictions, predict_results.label_ids, id2label, is_crf)
+            output_predict_file = os.path.join(t_args.output_dir, "test_predictions.txt")
+            with open(output_predict_file, "w") as writer:
+                for sentence in preds_list:
+                    writer.write(" ".join(sentence) + "\n")
+        else:
+            logger.warning("Test dataset not found. Skipping prediction.")
+
+    # --- TFLOPS ANALYSIS ---
     if dev_ds:
         try:
             from fvcore.nn import FlopCountAnalysis
