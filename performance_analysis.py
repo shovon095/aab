@@ -366,10 +366,16 @@ def build_compute_metrics(id2label, is_crf=False):
 # =================================================================================
 # 6. Main Benchmark Runner
 # =================================================================================
+# =================================================================================
+# 6. Main Benchmark Runner (with Debugging)
+# =================================================================================
 
 def main():
     parser = HfArgumentParser((ModelArguments, DataArguments, DistillArguments, TrainingArguments))
     m_args, d_args, dist_args, t_args = parser.parse_args_into_dataclasses()
+
+    # --- DEBUG: Check if the argument is parsed correctly ---
+    print(f"\n---> DEBUG: do_predict flag is set to: {t_args.do_predict}\n")
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s")
     set_seed(t_args.seed)
@@ -413,6 +419,12 @@ def main():
     dev_ds = NerDataset(d_args.data_dir, tokenizer, labels, d_args.max_seq_length, "devel", d_args.overwrite_cache) if t_args.do_eval else None
     test_ds = NerDataset(d_args.data_dir, tokenizer, labels, d_args.max_seq_length, "test", d_args.overwrite_cache) if t_args.do_predict else None
 
+    # --- DEBUG: Check if the test dataset was loaded ---
+    if t_args.do_predict:
+        print(f"\n---> DEBUG: test_ds object is: {test_ds}")
+        if test_ds:
+            print(f"---> DEBUG: test_ds length is: {len(test_ds)}\n")
+
     is_crf = m_args.model_type == 'crf'
     compute_metrics_fn = build_compute_metrics(id2label, is_crf=is_crf)
 
@@ -441,8 +453,11 @@ def main():
         logger.info(f"Total evaluation time: {eval_time:.2f} seconds")
 
     # --- INFERENCE ON TEST SET ---
+    print("\n---> DEBUG: Checking do_predict block...")
     if t_args.do_predict:
+        print("---> DEBUG: Entered the do_predict block.")
         if test_ds:
+            print("---> DEBUG: test_ds is valid, proceeding with prediction...")
             logger.info("*** Running Inference on Test Set ***")
             start_time = time.time()
             predict_results = trainer.predict(test_ds)
@@ -457,7 +472,11 @@ def main():
                 for sentence in preds_list:
                     writer.write(" ".join(sentence) + "\n")
         else:
+            print("---> DEBUG: test_ds is NOT valid, skipping prediction.")
             logger.warning("Test dataset not found. Skipping prediction.")
+    else:
+        print("---> DEBUG: do_predict is False, skipping prediction block entirely.")
+
 
     # --- TFLOPS ANALYSIS ---
     if dev_ds:
@@ -480,6 +499,3 @@ def main():
             logger.error(f"Could not run FLOPs analysis: {e}")
 
     logger.info("Benchmark run finished.")
-
-if __name__ == "__main__":
-    main()
