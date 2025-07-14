@@ -499,3 +499,5 @@ def main():
             logger.error(f"Could not run FLOPs analysis: {e}")
 
     logger.info("Benchmark run finished.")
+if __name__ == "__main__":
+    main()
