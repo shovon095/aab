@@ -134,34 +134,33 @@ def run_intrinsic_attention_analysis(attentions, input_tokens, question, schema,
 def run_post_hoc_gradient_analysis(model, tokenizer, inputs, sql_truth):
     """
     Runs Saliency and Integrated Gradients using Captum for comparison.
-    Handles DataParallel-wrapped models.
+    Moves model to CPU to avoid CUDA OOM errors during this intensive step.
     """
+    # *** BUG FIX IS HERE: Move model to CPU for this memory-heavy step ***
+    print("Moving model to CPU for gradient analysis to conserve VRAM...")
+    unwrapped_model = model.module if hasattr(model, 'module') else model
+    unwrapped_model.to('cpu')
+    
     def model_forward(inputs_embeds):
-        # The model object here is the DataParallel wrapper.
-        # Its forward pass will automatically distribute the work.
-        outputs = model(inputs_embeds=inputs_embeds)
+        outputs = unwrapped_model(inputs_embeds=inputs_embeds)
         target_token_str = sql_truth.split()[0] if sql_truth else ""
         if not target_token_str: 
-            device = next(model.parameters()).device
-            return torch.tensor([0.0]).to(device)
+            return torch.tensor([0.0])
         
         target_token_id = tokenizer.encode(target_token_str, add_special_tokens=False)[0]
-        # Logits will be on the primary device (usually GPU 0)
         target_logit = outputs.logits[0, -1, target_token_id]
         return target_logit.unsqueeze(0)
 
-    # Access the original model's methods via .module if it's wrapped
-    unwrapped_model = model.module if hasattr(model, 'module') else model
-    input_embeddings = unwrapped_model.get_input_embeddings()(inputs['input_ids'])
+    # Ensure inputs are on the CPU as well
+    input_embeddings = unwrapped_model.get_input_embeddings()(inputs['input_ids'].to('cpu'))
     baseline = torch.zeros_like(input_embeddings)
 
-    # Run attribution using the (potentially wrapped) model
+    # Run attribution on the CPU
     saliency_attr = Saliency(model_forward).attribute(input_embeddings)
     ig_attr = IntegratedGradients(model_forward).attribute(input_embeddings, baselines=baseline)
 
-    # Convert the final scores to float32 before sending to numpy
-    saliency_scores = saliency_attr.norm(dim=-1).squeeze(0).float().cpu().numpy()
-    ig_scores = ig_attr.norm(dim=-1).squeeze(0).float().cpu().numpy()
+    saliency_scores = saliency_attr.norm(dim=-1).squeeze(0).cpu().numpy()
+    ig_scores = ig_attr.norm(dim=-1).squeeze(0).cpu().numpy()
     
     return {'Saliency': saliency_scores, 'Integrated Gradients': ig_scores}
 
@@ -214,22 +213,21 @@ def main():
     print("--- Step 1: Loading Trained Model and Tokenizer ---")
     tokenizer = AutoTokenizer.from_pretrained(args.checkpoint_path, use_fast=False)
     
-    # *** BUG FIX IS HERE ***: Remove device_map="auto" which conflicts with DataParallel
     model = AutoModelForCausalLM.from_pretrained(
         args.checkpoint_path, 
         torch_dtype=torch.bfloat16,
         attn_implementation="eager" 
     )
     
-    # Determine the primary device
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model.to(device) # Move the entire model to the primary GPU
+    model.to(device)
     model.eval()
 
-    # Wrap model for Multi-GPU usage *after* it's on the primary device
-    if torch.cuda.device_count() > 1:
-        print(f"✔️ Using {torch.cuda.device_count()} GPUs via DataParallel.")
-        model = torch.nn.DataParallel(model)
+    # We will only wrap with DataParallel if we are NOT moving the model to CPU later
+    # For this version, we will manage device placement manually.
+    is_multi_gpu = torch.cuda.device_count() > 1
+    if is_multi_gpu:
+        print(f"✔️ {torch.cuda.device_count()} GPUs detected. Will manage device placement manually.")
 
     nlp = spacy.load("en_core_web_sm")
     print(f"✔️ Successfully loaded model from: {args.checkpoint_path}")
@@ -246,20 +244,16 @@ def main():
         schema_text = get_schema_from_db(db_path)
         prompt_text = prepare_analysis_prompt(question, schema_text)
         
-        # Ensure inputs are sent to the same primary device as the model
         inputs = tokenizer(prompt_text, return_tensors="pt").to(device)
         input_tokens = tokenizer.convert_ids_to_tokens(inputs['input_ids'][0])
 
-        # Get the learned attention weights from the model forward pass
+        # Get the learned attention weights from the model forward pass (on GPU)
         with torch.no_grad():
-            # Access the underlying model for the forward pass with specific outputs
-            unwrapped_model = model.module if hasattr(model, 'module') else model
-            outputs = unwrapped_model(**inputs, output_attentions=True)
+            outputs = model(**inputs, output_attentions=True)
         
-        # Convert to a standard float format before converting to numpy
         attentions = torch.stack(outputs.attentions).squeeze(1).cpu().float().numpy()
 
-        # Run intrinsic analysis
+        # Run intrinsic analysis (on CPU with numpy)
         intrinsic_scores, graphs = run_intrinsic_attention_analysis(attentions, input_tokens, question, schema_text, nlp)
         
         # Memory Management
@@ -267,9 +261,12 @@ def main():
         gc.collect()
         torch.cuda.empty_cache()
         
-        # Run gradient-based analysis using the DataParallel-wrapped model
+        # Run gradient-based analysis (on CPU)
         gradient_scores = run_post_hoc_gradient_analysis(model, tokenizer, inputs, sql_truth)
         
+        # Move model back to GPU for the next example's attention analysis
+        model.to(device)
+
         # Combine all scores into a single DataFrame for reporting
         df = pd.DataFrame(index=range(len(input_tokens)))
         df['Token'] = input_tokens
@@ -293,6 +290,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
