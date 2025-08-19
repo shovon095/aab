@@ -143,10 +143,11 @@ def run_post_hoc_gradient_analysis(model, tokenizer, inputs, sql_truth):
         target_token_id = tokenizer.encode(target_token_str, add_special_tokens=False)[0]
         # Logit at the position right after the prompt
         target_logit = outputs.logits[0, -1, target_token_id]
-        # *** FIX IS HERE ***: Ensure the output is a 1D tensor for Captum
+        # Ensure the output is a 1D tensor for Captum
         return target_logit.unsqueeze(0)
 
-    input_embeddings = model.get_input_embeddings()(inputs['input_ids'])
+    # *** FIX IS HERE ***: Convert embeddings to a standard float32 format for Captum
+    input_embeddings = model.get_input_embeddings()(inputs['input_ids']).float()
     baseline = torch.zeros_like(input_embeddings)
 
     saliency_scores = Saliency(model_forward).attribute(input_embeddings).norm(dim=-1).squeeze(0).cpu().numpy()
@@ -205,7 +206,7 @@ def main():
         args.checkpoint_path, 
         device_map="auto", 
         torch_dtype=torch.bfloat16,
-        # *** FIX IS HERE ***: Add attn_implementation to suppress warning
+        # Add attn_implementation to suppress warning
         attn_implementation="eager" 
     )
     model.eval()
@@ -256,5 +257,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
