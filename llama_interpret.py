@@ -135,23 +135,27 @@ def run_post_hoc_gradient_analysis(model, tokenizer, inputs, sql_truth):
     Runs Saliency and Integrated Gradients using Captum for comparison.
     """
     def model_forward(inputs_embeds):
+        # The model expects inputs to match its own dtype (bfloat16)
         outputs = model(inputs_embeds=inputs_embeds)
-        # Explain the logit for the *first* token of the ground truth SQL
         target_token_str = sql_truth.split()[0] if sql_truth else ""
-        if not target_token_str: return torch.tensor([0.0]).to(model.device)
+        if not target_token_str: 
+            return torch.tensor([0.0]).to(model.device)
         
         target_token_id = tokenizer.encode(target_token_str, add_special_tokens=False)[0]
-        # Logit at the position right after the prompt
         target_logit = outputs.logits[0, -1, target_token_id]
-        # Ensure the output is a 1D tensor for Captum
         return target_logit.unsqueeze(0)
 
-    # *** FIX IS HERE ***: Convert embeddings to a standard float32 format for Captum
-    input_embeddings = model.get_input_embeddings()(inputs['input_ids']).float()
+    # *** FIX IS HERE ***: Get embeddings in the model's native dtype (bfloat16)
+    input_embeddings = model.get_input_embeddings()(inputs['input_ids'])
     baseline = torch.zeros_like(input_embeddings)
 
-    saliency_scores = Saliency(model_forward).attribute(input_embeddings).norm(dim=-1).squeeze(0).cpu().numpy()
-    ig_scores = IntegratedGradients(model_forward).attribute(input_embeddings, baselines=baseline).norm(dim=-1).squeeze(0).cpu().numpy()
+    # Run attribution - the output will also be bfloat16
+    saliency_attr = Saliency(model_forward).attribute(input_embeddings)
+    ig_attr = IntegratedGradients(model_forward).attribute(input_embeddings, baselines=baseline)
+
+    # Convert the final scores to float32 before sending to numpy
+    saliency_scores = saliency_attr.norm(dim=-1).squeeze(0).float().cpu().numpy()
+    ig_scores = ig_attr.norm(dim=-1).squeeze(0).float().cpu().numpy()
     
     return {'Saliency': saliency_scores, 'Integrated Gradients': ig_scores}
 
@@ -257,3 +261,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
