@@ -198,7 +198,8 @@ def main():
         help="Path to the directory containing the trained model checkpoint (e.g., './llama_finetuned')."
     )
     parser.add_argument("--eval_path", type=str, required=True, help="Path to evaluation data in JSONL format.")
-    parser.add_right_path", type=str, required=True, help="Root directory for the SQLite databases.")
+    # *** BUG FIX IS HERE ***: Corrected the typo from "add_right_path" to "db_root_path"
+    parser.add_argument("--db_root_path", type=str, required=True, help="Root directory for the SQLite databases.")
     parser.add_argument("--output_dir", type=str, default="./analysis_results", help="Directory to save analysis results.")
     parser.add_argument("--num_examples", type=int, default=1, help="Number of examples from the eval set to analyze.")
     args = parser.parse_args()
@@ -277,5 +278,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
