@@ -134,23 +134,28 @@ def run_intrinsic_attention_analysis(attentions, input_tokens, question, schema,
 def run_post_hoc_gradient_analysis(model, tokenizer, inputs, sql_truth):
     """
     Runs Saliency and Integrated Gradients using Captum for comparison.
+    Handles DataParallel-wrapped models.
     """
     def model_forward(inputs_embeds):
-        # The model expects inputs to match its own dtype (bfloat16)
+        # The model object here is the DataParallel wrapper.
+        # Its forward pass will automatically distribute the work.
         outputs = model(inputs_embeds=inputs_embeds)
         target_token_str = sql_truth.split()[0] if sql_truth else ""
         if not target_token_str: 
-            return torch.tensor([0.0]).to(model.device)
+            device = next(model.parameters()).device
+            return torch.tensor([0.0]).to(device)
         
         target_token_id = tokenizer.encode(target_token_str, add_special_tokens=False)[0]
+        # Logits will be on the primary device (usually GPU 0)
         target_logit = outputs.logits[0, -1, target_token_id]
         return target_logit.unsqueeze(0)
 
-    # Get embeddings in the model's native dtype (bfloat16)
-    input_embeddings = model.get_input_embeddings()(inputs['input_ids'])
+    # Access the original model's methods via .module if it's wrapped
+    unwrapped_model = model.module if hasattr(model, 'module') else model
+    input_embeddings = unwrapped_model.get_input_embeddings()(inputs['input_ids'])
     baseline = torch.zeros_like(input_embeddings)
 
-    # Run attribution - the output will also be bfloat16
+    # Run attribution using the (potentially wrapped) model
     saliency_attr = Saliency(model_forward).attribute(input_embeddings)
     ig_attr = IntegratedGradients(model_forward).attribute(input_embeddings, baselines=baseline)
 
@@ -159,6 +164,7 @@ def run_post_hoc_gradient_analysis(model, tokenizer, inputs, sql_truth):
     ig_scores = ig_attr.norm(dim=-1).squeeze(0).float().cpu().numpy()
     
     return {'Saliency': saliency_scores, 'Integrated Gradients': ig_scores}
+
 
 def save_analysis_artifacts(df, graphs, tokens, question_text, output_dir, ex_idx):
     """Saves the results DataFrame to CSV and graph visualizations to PNG."""
@@ -198,7 +204,6 @@ def main():
         help="Path to the directory containing the trained model checkpoint (e.g., './llama_finetuned')."
     )
     parser.add_argument("--eval_path", type=str, required=True, help="Path to evaluation data in JSONL format.")
-    # *** BUG FIX IS HERE ***: Corrected the typo from "add_right_path" to "db_root_path"
     parser.add_argument("--db_root_path", type=str, required=True, help="Root directory for the SQLite databases.")
     parser.add_argument("--output_dir", type=str, default="./analysis_results", help="Directory to save analysis results.")
     parser.add_argument("--num_examples", type=int, default=1, help="Number of examples from the eval set to analyze.")
@@ -212,10 +217,15 @@ def main():
         args.checkpoint_path, 
         device_map="auto", 
         torch_dtype=torch.bfloat16,
-        # Add attn_implementation to suppress warning
         attn_implementation="eager" 
     )
     model.eval()
+
+    # *** FIX IS HERE: WRAP MODEL FOR MULTI-GPU USAGE ***
+    if torch.cuda.device_count() > 1:
+        print(f"✔️ Using {torch.cuda.device_count()} GPUs via DataParallel.")
+        model = torch.nn.DataParallel(model)
+
     nlp = spacy.load("en_core_web_sm")
     print(f"✔️ Successfully loaded model from: {args.checkpoint_path}")
 
@@ -231,12 +241,16 @@ def main():
         schema_text = get_schema_from_db(db_path)
         prompt_text = prepare_analysis_prompt(question, schema_text)
         
-        inputs = tokenizer(prompt_text, return_tensors="pt").to(model.device)
+        # The model device will be the primary GPU in DataParallel
+        primary_device = next(model.parameters()).device
+        inputs = tokenizer(prompt_text, return_tensors="pt").to(primary_device)
         input_tokens = tokenizer.convert_ids_to_tokens(inputs['input_ids'][0])
 
         # Get the learned attention weights from the model forward pass
         with torch.no_grad():
-            outputs = model(**inputs, output_attentions=True)
+            # Access the underlying model for the forward pass with specific outputs
+            unwrapped_model = model.module if hasattr(model, 'module') else model
+            outputs = unwrapped_model(**inputs, output_attentions=True)
         
         # Convert to a standard float format before converting to numpy
         attentions = torch.stack(outputs.attentions).squeeze(1).cpu().float().numpy()
@@ -244,14 +258,12 @@ def main():
         # Run intrinsic analysis
         intrinsic_scores, graphs = run_intrinsic_attention_analysis(attentions, input_tokens, question, schema_text, nlp)
         
-        # *** MEMORY MANAGEMENT INTERVENTION ***
-        # Delete large tensors that are no longer needed before the next memory-intensive step
-        del outputs
-        del attentions
+        # Memory Management
+        del outputs, attentions
         gc.collect()
         torch.cuda.empty_cache()
         
-        # Run gradient-based analysis
+        # Run gradient-based analysis using the DataParallel-wrapped model
         gradient_scores = run_post_hoc_gradient_analysis(model, tokenizer, inputs, sql_truth)
         
         # Combine all scores into a single DataFrame for reporting
@@ -270,14 +282,14 @@ def main():
         
         save_analysis_artifacts(df, graphs, input_tokens, question, args.output_dir, ex_idx)
         
-        # *** MEMORY MANAGEMENT INTERVENTION ***
-        # Clean up at the end of the loop to prepare for the next example
+        # Memory Management
         del intrinsic_scores, graphs, gradient_scores, df, inputs, input_tokens
         gc.collect()
         torch.cuda.empty_cache()
 
 if __name__ == "__main__":
     main()
+
 
 
 
