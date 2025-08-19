@@ -138,11 +138,13 @@ def run_post_hoc_gradient_analysis(model, tokenizer, inputs, sql_truth):
         outputs = model(inputs_embeds=inputs_embeds)
         # Explain the logit for the *first* token of the ground truth SQL
         target_token_str = sql_truth.split()[0] if sql_truth else ""
-        if not target_token_str: return torch.tensor(0.0)
+        if not target_token_str: return torch.tensor([0.0]).to(model.device)
         
         target_token_id = tokenizer.encode(target_token_str, add_special_tokens=False)[0]
         # Logit at the position right after the prompt
-        return outputs.logits[0, -1, target_token_id]
+        target_logit = outputs.logits[0, -1, target_token_id]
+        # *** FIX IS HERE ***: Ensure the output is a 1D tensor for Captum
+        return target_logit.unsqueeze(0)
 
     input_embeddings = model.get_input_embeddings()(inputs['input_ids'])
     baseline = torch.zeros_like(input_embeddings)
@@ -202,7 +204,9 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
         args.checkpoint_path, 
         device_map="auto", 
-        torch_dtype=torch.bfloat16
+        torch_dtype=torch.bfloat16,
+        # *** FIX IS HERE ***: Add attn_implementation to suppress warning
+        attn_implementation="eager" 
     )
     model.eval()
     nlp = spacy.load("en_core_web_sm")
@@ -227,7 +231,6 @@ def main():
         with torch.no_grad():
             outputs = model(**inputs, output_attentions=True)
         
-        # *** FIX IS HERE ***
         # Convert to a standard float format before converting to numpy
         attentions = torch.stack(outputs.attentions).squeeze(1).cpu().float().numpy()
 
@@ -253,4 +256,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
