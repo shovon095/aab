@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import gc
 import json
 import os
 import sqlite3
@@ -145,7 +146,7 @@ def run_post_hoc_gradient_analysis(model, tokenizer, inputs, sql_truth):
         target_logit = outputs.logits[0, -1, target_token_id]
         return target_logit.unsqueeze(0)
 
-    # *** FIX IS HERE ***: Get embeddings in the model's native dtype (bfloat16)
+    # Get embeddings in the model's native dtype (bfloat16)
     input_embeddings = model.get_input_embeddings()(inputs['input_ids'])
     baseline = torch.zeros_like(input_embeddings)
 
@@ -197,7 +198,7 @@ def main():
         help="Path to the directory containing the trained model checkpoint (e.g., './llama_finetuned')."
     )
     parser.add_argument("--eval_path", type=str, required=True, help="Path to evaluation data in JSONL format.")
-    parser.add_argument("--db_root_path", type=str, required=True, help="Root directory for the SQLite databases.")
+    parser.add_right_path", type=str, required=True, help="Root directory for the SQLite databases.")
     parser.add_argument("--output_dir", type=str, default="./analysis_results", help="Directory to save analysis results.")
     parser.add_argument("--num_examples", type=int, default=1, help="Number of examples from the eval set to analyze.")
     args = parser.parse_args()
@@ -239,8 +240,17 @@ def main():
         # Convert to a standard float format before converting to numpy
         attentions = torch.stack(outputs.attentions).squeeze(1).cpu().float().numpy()
 
-        # Run both types of post-hoc analysis
+        # Run intrinsic analysis
         intrinsic_scores, graphs = run_intrinsic_attention_analysis(attentions, input_tokens, question, schema_text, nlp)
+        
+        # *** MEMORY MANAGEMENT INTERVENTION ***
+        # Delete large tensors that are no longer needed before the next memory-intensive step
+        del outputs
+        del attentions
+        gc.collect()
+        torch.cuda.empty_cache()
+        
+        # Run gradient-based analysis
         gradient_scores = run_post_hoc_gradient_analysis(model, tokenizer, inputs, sql_truth)
         
         # Combine all scores into a single DataFrame for reporting
@@ -258,7 +268,14 @@ def main():
         print(df.round(4).to_string())
         
         save_analysis_artifacts(df, graphs, input_tokens, question, args.output_dir, ex_idx)
+        
+        # *** MEMORY MANAGEMENT INTERVENTION ***
+        # Clean up at the end of the loop to prepare for the next example
+        del intrinsic_scores, graphs, gradient_scores, df, inputs, input_tokens
+        gc.collect()
+        torch.cuda.empty_cache()
 
 if __name__ == "__main__":
     main()
+
 
