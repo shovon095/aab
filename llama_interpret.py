@@ -213,15 +213,20 @@ def main():
     
     print("--- Step 1: Loading Trained Model and Tokenizer ---")
     tokenizer = AutoTokenizer.from_pretrained(args.checkpoint_path, use_fast=False)
+    
+    # *** BUG FIX IS HERE ***: Remove device_map="auto" which conflicts with DataParallel
     model = AutoModelForCausalLM.from_pretrained(
         args.checkpoint_path, 
-        device_map="auto", 
         torch_dtype=torch.bfloat16,
         attn_implementation="eager" 
     )
+    
+    # Determine the primary device
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.to(device) # Move the entire model to the primary GPU
     model.eval()
 
-    # *** FIX IS HERE: WRAP MODEL FOR MULTI-GPU USAGE ***
+    # Wrap model for Multi-GPU usage *after* it's on the primary device
     if torch.cuda.device_count() > 1:
         print(f"✔️ Using {torch.cuda.device_count()} GPUs via DataParallel.")
         model = torch.nn.DataParallel(model)
@@ -241,9 +246,8 @@ def main():
         schema_text = get_schema_from_db(db_path)
         prompt_text = prepare_analysis_prompt(question, schema_text)
         
-        # The model device will be the primary GPU in DataParallel
-        primary_device = next(model.parameters()).device
-        inputs = tokenizer(prompt_text, return_tensors="pt").to(primary_device)
+        # Ensure inputs are sent to the same primary device as the model
+        inputs = tokenizer(prompt_text, return_tensors="pt").to(device)
         input_tokens = tokenizer.convert_ids_to_tokens(inputs['input_ids'][0])
 
         # Get the learned attention weights from the model forward pass
@@ -289,6 +293,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
