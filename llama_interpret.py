@@ -40,13 +40,25 @@ def get_schema_from_db(db_path):
         return ""
 
 def load_evaluation_data(path):
-    """Loads evaluation data from a JSONL file."""
-    examples = []
-    with open(path, "r", encoding="utf-8") as f:
-        for line in f:
-            if line.strip():
-                examples.append(json.loads(line))
-    return examples
+    """Loads evaluation data from a standard multi-line JSON file."""
+    print(f"Attempting to load standard JSON from: {path}")
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            # Read the entire file content and parse it as a single JSON object
+            data = json.load(f)
+            # The script expects a list of examples
+            if isinstance(data, list):
+                return data
+            # Handle cases where the JSON might be a dict containing the list
+            elif isinstance(data, dict) and "data" in data:
+                return data["data"]
+            else:
+                print(f"Warning: JSON file {path} is not a list of examples.", file=sys.stderr)
+                return []
+    except json.JSONDecodeError as e:
+        print(f"Error: Could not parse JSON file {path}. Malformed JSON.", file=sys.stderr)
+        print(f"Details: {e}", file=sys.stderr)
+        return [] # Return an empty list to prevent crashing
 
 def prepare_analysis_prompt(question, schema_text):
     """Constructs the prompt for the model analysis."""
@@ -214,7 +226,10 @@ def main():
         # Get the learned attention weights from the model forward pass
         with torch.no_grad():
             outputs = model(**inputs, output_attentions=True)
-        attentions = torch.stack(outputs.attentions).squeeze(1).cpu().numpy()
+        
+        # *** FIX IS HERE ***
+        # Convert to a standard float format before converting to numpy
+        attentions = torch.stack(outputs.attentions).squeeze(1).cpu().float().numpy()
 
         # Run both types of post-hoc analysis
         intrinsic_scores, graphs = run_intrinsic_attention_analysis(attentions, input_tokens, question, schema_text, nlp)
@@ -238,3 +253,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
